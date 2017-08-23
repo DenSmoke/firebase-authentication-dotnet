@@ -128,5 +128,7 @@
         /// <param name="auth"> The authenticated user to have its access token refreshed. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth);
+
+        Task<FirebaseAuthLink> SignInWithOAuthTwitterAsync(FirebaseAuthType authType, string oauthAccessToken, string oauthVerifier, string secret);
     }
 }

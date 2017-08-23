@@ -84,10 +84,18 @@
         public async Task<FirebaseAuthLink> SignInWithOAuthAsync(FirebaseAuthType authType, string oauthAccessToken)
         {
             var providerId = this.GetProviderId(authType);
-            var content = $"{{\"postBody\":\"access_token={oauthAccessToken}&providerId={providerId}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true}}";
+            var content = $"{{\"postBody\":\"access_token={oauthAccessToken}&providerId={providerId}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true,\"returnIdpCredential\":true}}";
 
             return await this.ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
         }
+
+		public async Task<FirebaseAuthLink> SignInWithOAuthTwitterAsync(FirebaseAuthType authType, string oauthAccessToken, string oauthVerifier, string secret)
+		{
+			var providerId = this.GetProviderId(authType);
+            var content = $"{{\"postBody\":\"access_token={oauthAccessToken}&providerId={providerId}&oauth_verifier={oauthVerifier}&oauth_token={oauthAccessToken}&oauth_token_secret={secret}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true,\"returnIdpCredential\":true}}";
+
+			return await this.ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
+		}
 
         /// <summary>
         /// Sign in user anonymously. He would still have a user id and access token generated, but name and other personal user properties will be null.
