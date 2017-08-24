@@ -253,6 +253,13 @@
             return await this.ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
         }
 
+		public async Task<FirebaseAuthLink> LinkTwitterAccountsAsync(string firebaseToken, FirebaseAuthType authType, string oauthAccessToken, string oauthVerifier, string secret)
+		{
+			var providerId = this.GetProviderId(authType);
+			var content = $"{{\"idToken\":\"{firebaseToken}\",\"postBody\":\"access_token={oauthAccessToken}&providerId={providerId}&oauth_verifier={oauthVerifier}&oauth_token={oauthAccessToken}&oauth_token_secret={secret}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true}}";
+			return await this.ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
+		}
+
         /// <summary>
         /// Links the authenticated user represented by <see cref="auth"/> with and account from a third party provider.
         /// </summary>

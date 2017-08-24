@@ -130,5 +130,6 @@
         Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth);
 
         Task<FirebaseAuthLink> SignInWithOAuthTwitterAsync(FirebaseAuthType authType, string oauthAccessToken, string oauthVerifier, string secret);
+        Task<FirebaseAuthLink> LinkTwitterAccountsAsync(string firebaseToken, FirebaseAuthType authType, string oauthAccessToken, string oauthVerifier, string secret);
     }
 }
