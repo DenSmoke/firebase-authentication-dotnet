@@ -1,8 +1,8 @@
 ﻿namespace Firebase.Auth
 {
     using System.ComponentModel;
+    using System.Text.Json.Serialization;
 
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Basic information about the logged in user.
@@ -12,7 +12,7 @@
         /// <summary>
         /// Gets or sets the local id.
         /// </summary>
-        [JsonProperty("localId", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("localId")]
         [DefaultValue("")]
         public string LocalId
         {
@@ -23,7 +23,7 @@
         /// <summary>
         /// Gets or sets the federated id.
         /// </summary>
-        [JsonProperty("federatedId", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("federatedId")]
         [DefaultValue("")]
         public string FederatedId
         {
@@ -34,7 +34,7 @@
         /// <summary>
         /// Gets or sets the first name.
         /// </summary>
-        [JsonProperty("firstName", DefaultValueHandling = DefaultValueHandling.Populate)] 
+        [JsonPropertyName("firstName")] 
         [DefaultValue("")]
         public string FirstName
         {
@@ -45,7 +45,7 @@
         /// <summary>
         /// Gets or sets the last name.
         /// </summary>
-        [JsonProperty("lastName", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("lastName")]
         [DefaultValue("")]
         public string LastName
         {
@@ -56,7 +56,7 @@
         /// <summary>
         /// Gets or sets the display name.
         /// </summary>
-        [JsonProperty("displayName", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("displayName")]
         [DefaultValue("")]
         public string DisplayName
         {
@@ -67,7 +67,7 @@
         /// <summary>
         /// Gets or sets the email.
         /// </summary>
-        [JsonProperty("email", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("email")]
         [DefaultValue("")]
         public string Email
         {
@@ -78,7 +78,7 @@
         /// <summary>
         /// Gets or sets the email verfication status.
         /// </summary>
-        [JsonProperty("emailVerified", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("emailVerified")]
         [DefaultValue(false)]
         public bool IsEmailVerified
         {
@@ -89,7 +89,7 @@
         /// <summary>
         /// Gets or sets the photo url.
         /// </summary>
-        [JsonProperty("photoUrl", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("photoUrl")]
         [DefaultValue("")]
         public string PhotoUrl
         {
@@ -100,7 +100,7 @@
         /// <summary>
         /// Gets or sets the phone number.
         /// </summary>
-        [JsonProperty("phoneNumber", DefaultValueHandling = DefaultValueHandling.Populate)]
+        [JsonPropertyName("phoneNumber")]
         [DefaultValue("")]
         public string PhoneNumber
         {

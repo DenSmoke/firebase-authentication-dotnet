@@ -5,9 +5,8 @@
     using System.Linq;
     using System.Net.Http;
     using System.Text;
+    using System.Text.Json;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// The auth token provider.
@@ -69,8 +68,8 @@
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
-                var resultJson = JObject.Parse(responseData);
-                var user = JsonConvert.DeserializeObject<User>(resultJson["users"].First().ToString());
+                var resultJson = JsonDocument.Parse(responseData);
+                var user = JsonSerializer.Deserialize<User>(resultJson.RootElement.GetProperty("users").ToString());
                 return user; 
             }
             catch (Exception ex)
@@ -379,7 +378,7 @@
 
                 response.EnsureSuccessStatusCode();
 
-                var data = JsonConvert.DeserializeObject<ProviderQueryResult>(responseData);
+                var data = JsonSerializer.Deserialize<ProviderQueryResult>(responseData);
                 data.Email = email;
 
                 return data;
@@ -400,7 +399,7 @@
                 var response = await this.client.PostAsync(new Uri(string.Format(GoogleRefreshAuth, this.authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
 
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var refreshAuth = JsonConvert.DeserializeObject<RefreshAuth>(responseData);
+                var refreshAuth = JsonSerializer.Deserialize<RefreshAuth>(responseData);
 
                 return new FirebaseAuthLink
                 {
@@ -436,8 +435,8 @@
 
                 response.EnsureSuccessStatusCode();
 
-                var user = JsonConvert.DeserializeObject<User>(responseData);
-                var auth = JsonConvert.DeserializeObject<FirebaseAuthLink>(responseData);
+                var user = JsonSerializer.Deserialize<User>(responseData);
+                var auth = JsonSerializer.Deserialize<FirebaseAuthLink>(responseData);
 
                 auth.AuthProvider = this;
                 auth.User = user;
@@ -463,11 +462,12 @@
                 if (!string.IsNullOrEmpty(responseData) && responseData != "N/A")
                 {
                     //create error data template and try to parse JSON
-                    var errorData = new { error = new { code = 0, message = "errorid" } };
-                    errorData = JsonConvert.DeserializeAnonymousType(responseData, errorData);
+                    /*var errorData = new { error = new { code = 0, message = "errorid" } };
+                    errorData = JsonConvert.DeserializeAnonymousType(responseData, errorData);*/
 
+                    var errorData = JsonDocument.Parse(responseData);
                     //errorData is just null if different JSON was received
-                    switch (errorData?.error?.message)
+                    switch (errorData.RootElement.GetProperty("error").GetProperty("message").GetString())
                     {
                         //general errors
                         case "invalid access_token, error code 43.":
@@ -549,7 +549,7 @@
                     }
                 }
             }
-            catch (JsonReaderException)
+            catch (JsonException)
             {
                 //the response wasn't JSON - no data to be parsed
             }
