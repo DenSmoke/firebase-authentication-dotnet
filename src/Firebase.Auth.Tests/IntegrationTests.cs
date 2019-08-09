@@ -3,21 +3,22 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Configuration;
     using Xunit;
 
     public class IntegrationTests
     {
-
+        private static IConfigurationRoot config = new ConfigurationBuilder().AddJsonFile("config.json").Build();
 #pragma warning disable IDE1006
-        private const string ApiKey = "<YOUR API KEY>";
-        private const string FacebookAccessToken = "<FACEBOOK USER ACCESS TOKEN>";
-        private const string FacebookTestUserFirstName = "Mark";
-        private const string GoogleAccessToken = "<GOOGLE USER ACCESS TOKEN>";
-        private const string GoogleTestUserFirstName = "Mark";
-        private const string FirebaseEmail = "<TEST USER EMAIL>";
-        private const string FirebasePassword = "<TEST USER PASSWORD>";
-        private const string NewFirebaseEmail = "<TEST USER EMAIL>";
-        private const string NewFirebasePassword = "<TEST USER PASSWORD>";
+        private readonly string ApiKey = config.GetValue<string>(nameof(ApiKey));
+        private readonly string FacebookAccessToken = config.GetValue<string>(nameof(FacebookAccessToken));
+        private readonly string FacebookTestUserFirstName = config.GetValue<string>(nameof(FacebookTestUserFirstName));
+        private readonly string GoogleAccessToken = config.GetValue<string>(nameof(GoogleAccessToken));
+        private readonly string GoogleTestUserFirstName = config.GetValue<string>(nameof(GoogleTestUserFirstName));
+        private readonly string FirebaseEmail = config.GetValue<string>(nameof(FirebaseEmail));
+        private readonly string FirebasePassword = config.GetValue<string>(nameof(FirebasePassword));
+        private readonly string NewFirebaseEmail = config.GetValue<string>(nameof(NewFirebaseEmail));
+        private readonly string NewFirebasePassword = config.GetValue<string>(nameof(NewFirebasePassword));
 #pragma warning restore IDE1006
 
         [Fact]
