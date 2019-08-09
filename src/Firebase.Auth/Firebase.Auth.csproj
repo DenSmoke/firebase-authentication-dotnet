@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <PackageId>FirebaseAuthentication.net</PackageId>
     <PackageVersion>3.2.0</PackageVersion>
     <Authors>Step Up Labs, Inc.</Authors>
