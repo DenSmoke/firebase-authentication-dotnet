@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
 
 namespace Firebase.Auth
 {
@@ -37,5 +36,5 @@ namespace Firebase.Auth
         /// </summary>
         [EnumMember(Value = "password")]
         EmailAndPassword
-    } 
+    }
 }
