@@ -11,7 +11,7 @@
     {
         public ProviderQueryResult()
         {
-            this.Providers = new List<FirebaseAuthType>();
+            Providers = new List<FirebaseAuthType>();
         }
 
         public string Email

@@ -16,7 +16,7 @@
         /// <param name="sendVerificationEmail"> Optional. Whether to send user a link to verfiy his email address. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         Task<FirebaseAuthLink> CreateUserWithEmailAndPasswordAsync(string email, string password, string displayName = "", bool sendVerificationEmail = false);
-        
+
         /// <summary>
         /// Sends user an email with a link to reset his password.
         /// </summary>

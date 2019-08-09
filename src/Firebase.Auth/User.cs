@@ -34,7 +34,7 @@
         /// <summary>
         /// Gets or sets the first name.
         /// </summary>
-        [JsonPropertyName("firstName")] 
+        [JsonPropertyName("firstName")]
         [DefaultValue("")]
         public string FirstName
         {
