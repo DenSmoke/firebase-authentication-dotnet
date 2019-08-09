@@ -9,6 +9,7 @@ namespace Firebase.Auth
         public string AccessToken { get; set; }
 
         [JsonPropertyName("expires_in")]
+        [JsonConverter(typeof(JsonStringIntConverter))]
         public int ExpiresIn { get; set; }
 
         [JsonPropertyName("refresh_token")]
