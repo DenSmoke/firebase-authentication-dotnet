@@ -37,6 +37,7 @@
         /// Gets or sets the numbers of seconds since <see cref="Created"/> when the token expires.
         /// </summary>
         [JsonPropertyName("expiresIn")]
+        [JsonConverter(typeof(JsonStringIntConverter))]
         public int ExpiresIn
         {
             get;
