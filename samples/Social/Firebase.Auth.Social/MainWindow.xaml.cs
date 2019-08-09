@@ -1,16 +1,15 @@
 ﻿namespace Firebase.Auth.Social
 {
+    using System;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
     using Database;
     using Database.Query;
     using Facebook;
     using Google.Apis.Auth.OAuth2;
     using Google.Apis.Util;
-    using System;
-    using System.Dynamic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Windows;
 
     public partial class MainWindow : Window
     {
@@ -27,10 +26,10 @@
 
         private void FacebookClick(object sender, RoutedEventArgs e)
         {
-            var loginUri = this.GenerateFacebookLoginUrl(FacebookAppId, "email");
+            var loginUri = GenerateFacebookLoginUrl(FacebookAppId, "email");
 
-            this.Browser.Visibility = Visibility.Visible;
-            this.Browser.Navigate(loginUri);
+            Browser.Visibility = Visibility.Visible;
+            Browser.Navigate(loginUri);
         }
 
         private async void GoogleClick(object sender, RoutedEventArgs e)
@@ -50,7 +49,7 @@
                     await result.RefreshTokenAsync(CancellationToken.None);
                 }
 
-                this.FetchFirebaseData(result.Token.AccessToken, FirebaseAuthType.Google);
+                FetchFirebaseData(result.Token.AccessToken, FirebaseAuthType.Google);
             }
             catch (Exception ex)
             {
@@ -62,19 +61,22 @@
         {
             // copied from http://stackoverflow.com/questions/29621427/facebook-sdk-integration-in-wpf-application
 
-            dynamic parameters = new ExpandoObject();
-            parameters.client_id = appId;
-            parameters.redirect_uri = "https://www.facebook.com/connect/login_success.html";
+            var parameters = new
+            {
+                client_id = appId,
+                redirect_uri = "https://www.facebook.com/connect/login_success.html",
 
-            // The requested response: an access token (token), an authorization code (code), or both (code token).
-            parameters.response_type = "token";
+                // The requested response: an access token (token), an authorization code (code), or both (code token).
+                response_type = "token",
 
-            // list of additional display modes can be found at http://developers.facebook.com/docs/reference/dialogs/#display
-            parameters.display = "popup";
-
+                // list of additional display modes can be found at http://developers.facebook.com/docs/reference/dialogs/#display
+                display = "popup",
+                scope = !string.IsNullOrWhiteSpace(extendedPermissions) ? extendedPermissions : null
+            };
             // add the 'scope' parameter only if we have extendedPermissions.
-            if (!string.IsNullOrWhiteSpace(extendedPermissions))
-                parameters.scope = extendedPermissions;
+            //if (!string.IsNullOrWhiteSpace(extendedPermissions))
+            //    parameters.scope = extendedPermissions;
+
 
             // generate the login url
             var fb = new FacebookClient();
@@ -84,16 +86,15 @@
         private void BrowserNavigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
             var fb = new FacebookClient();
-            FacebookOAuthResult oauthResult;
-            if (!fb.TryParseOAuthCallbackUrl(e.Uri, out oauthResult))
+            if (!fb.TryParseOAuthCallbackUrl(e.Uri, out var oauthResult))
             {
                 return;
             }
 
             if (oauthResult.IsSuccess)
             {
-                this.Browser.Visibility = Visibility.Collapsed;
-                this.FetchFirebaseData(oauthResult.AccessToken, FirebaseAuthType.Facebook);
+                Browser.Visibility = Visibility.Collapsed;
+                FetchFirebaseData(oauthResult.AccessToken, FirebaseAuthType.Facebook);
             }
         }
 
