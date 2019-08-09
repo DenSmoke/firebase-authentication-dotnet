@@ -52,7 +52,7 @@
             firebaseAuthLink.User = await this.GetUserAsync(firebaseAuthLink.FirebaseToken).ConfigureAwait(false);
             return firebaseAuthLink;
         }
-        
+
         /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
@@ -63,14 +63,14 @@
             var content = $"{{\"idToken\":\"{firebaseToken}\"}}";
             var responseData = "N/A";
             try
-            { 
+            {
                 var response = await this.client.PostAsync(new Uri(string.Format(GoogleGetUser, this.authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
                 var resultJson = JsonDocument.Parse(responseData);
                 var user = JsonSerializer.Deserialize<User>(resultJson.RootElement.GetProperty("users").ToString());
-                return user; 
+                return user;
             }
             catch (Exception ex)
             {
@@ -224,15 +224,15 @@
         {
             var content = $"{{ \"idToken\": \"{firebaseToken}\" }}";
             var responseData = "N/A";
-            
-            try 
+
+            try
             {
                 var response = await this.client.PostAsync(new Uri(string.Format(GoogleDeleteUserUrl, this.authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                
+
                 response.EnsureSuccessStatusCode();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 AuthErrorReason errorReason = GetFailureReason(responseData);
                 throw new FirebaseAuthException(GoogleDeleteUserUrl, content, responseData, ex, errorReason);
@@ -378,7 +378,9 @@
 
                 response.EnsureSuccessStatusCode();
 
-                var data = JsonSerializer.Deserialize<ProviderQueryResult>(responseData);
+                var options = new JsonSerializerOptions();
+                options.Converters.Add(new JsonStringListOfEnumConverter<FirebaseAuthType>());
+                var data = JsonSerializer.Deserialize<ProviderQueryResult>(responseData, options);
                 data.Email = email;
 
                 return data;
@@ -391,12 +393,12 @@
 
         public async Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth)
         {
-            var content = $"{{\"grant_type\":\"refresh_token\", \"refresh_token\":\"{auth.RefreshToken}\"}}";
+            var content = $"grant_type=refresh_token&refresh_token={auth.RefreshToken}";
             var responseData = "N/A";
 
             try
             {
-                var response = await this.client.PostAsync(new Uri(string.Format(GoogleRefreshAuth, this.authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                var response = await this.client.PostAsync(new Uri(string.Format(GoogleRefreshAuth, this.authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).ConfigureAwait(false);
 
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var refreshAuth = JsonSerializer.Deserialize<RefreshAuth>(responseData);
@@ -504,7 +506,7 @@
                         case "EMAIL_EXISTS":
                             failureReason = AuthErrorReason.EmailExists;
                             break;
-                            
+
                         //possible errors from Account Delete
                         case "USER_NOT_FOUND":
                             failureReason = AuthErrorReason.UserNotFound;
