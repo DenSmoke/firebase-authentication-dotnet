@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <PackageId>FirebaseAuthentication.net</PackageId>
     <PackageVersion>3.2.0</PackageVersion>
     <Authors>Step Up Labs, Inc.</Authors>
@@ -15,9 +16,9 @@
     <Copyright>Step Up Labs, Inc. 2016</Copyright>
     <PackageTags>Firebase Auth Authentication Google Facebook Github Twitter</PackageTags>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="System.Text.Json" Version="4.6.0-preview7.19362.9" />
   </ItemGroup>
 
 </Project>

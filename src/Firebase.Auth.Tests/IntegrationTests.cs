@@ -1,180 +1,178 @@
 ﻿namespace Firebase.Auth.Tests
 {
     using System;
-
-    using FluentAssertions;
-
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System.Linq;
+    using System.Threading.Tasks;
+    using Xunit;
 
     public class IntegrationTests
     {
         private const string ApiKey = "<YOUR API KEY>";
-
         private const string FacebookAccessToken = "<FACEBOOK USER ACCESS TOKEN>";
         private const string FacebookTestUserFirstName = "Mark";
-
         private const string GoogleAccessToken = "<GOOGLE USER ACCESS TOKEN>";
         private const string GoogleTestUserFirstName = "Mark";
-
         private const string FirebaseEmail = "<TEST USER EMAIL>";
         private const string FirebasePassword = "<TEST USER PASSWORD>";
+        private const string NewFirebaseEmail = "<TEST USER EMAIL>";
+        private const string NewFirebasePassword = "<TEST USER PASSWORD>";
 
-        [TestMethod]
-        public void FacebookTest()
+        [Fact]
+        public async Task FacebookTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = authProvider.SignInWithOAuthAsync(FirebaseAuthType.Facebook, FacebookAccessToken).Result;
+            var auth = await authProvider.SignInWithOAuthAsync(FirebaseAuthType.Facebook, FacebookAccessToken).ConfigureAwait(false);
 
-            auth.User.FirstName.Should().BeEquivalentTo(FacebookTestUserFirstName);
-            auth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+            Assert.Equal(FacebookTestUserFirstName, auth.User.FirstName);
+            Assert.False(string.IsNullOrWhiteSpace(auth.FirebaseToken));
         }
 
-        [TestMethod]
-        public void GoogleTest()
+        [Fact]
+        public async Task GoogleTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = authProvider.SignInWithOAuthAsync(FirebaseAuthType.Google, GoogleAccessToken).Result;
+            var auth = await authProvider.SignInWithOAuthAsync(FirebaseAuthType.Google, GoogleAccessToken).ConfigureAwait(false);
 
-            auth.User.FirstName.Should().BeEquivalentTo(GoogleTestUserFirstName);
-            auth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+            Assert.Equal(GoogleTestUserFirstName, auth.User.FirstName);
+            Assert.False(string.IsNullOrWhiteSpace(auth.FirebaseToken));
         }
 
-        [TestMethod]
-        public void EmailTest()
+        [Fact]
+        public async Task EmailTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, FirebasePassword).Result;
+            var auth = await authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, FirebasePassword).ConfigureAwait(false);
 
-            auth.User.Email.Should().BeEquivalentTo(FirebaseEmail);
-            auth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+            Assert.Equal(FirebaseEmail, auth.User.Email);
+            Assert.False(string.IsNullOrWhiteSpace(auth.FirebaseToken));
         }
 
-        [TestMethod]
-        public void Unknown_email_address_should_be_reflected_by_failure_reason()
+        [Fact]
+        public async Task UnknownEmailAddressShouldBeReflectedByFailureReason()
         {
             using (var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey)))
             {
-                try
-                {
-                    authProvider.SignInWithEmailAndPasswordAsync("someinvalidaddressxxx@foo.com", FirebasePassword).Wait();
-                    Assert.Fail("Sign-in should fail with invalid email.");
-                }
-                catch (Exception e)
-                {
-                    var exception = (FirebaseAuthException) e.InnerException;
-                    exception.Reason.Should().Be(AuthErrorReason.UnknownEmailAddress);
-                }
+                var exception = await Assert.ThrowsAsync<FirebaseAuthException>(() => authProvider.SignInWithEmailAndPasswordAsync("someinvalidaddressxxx@foo.com", FirebasePassword)).ConfigureAwait(false);
+                Assert.Equal(AuthErrorReason.UnknownEmailAddress, exception.Reason);
             }
         }
 
-        [TestMethod]
-        public void Invalid_email_address_format_should_be_reflected_by_failure_reason()
+        [Fact]
+        public async Task InvalidEmailAddressFormatShouldBeReflectedByFailureReason()
         {
             using (var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey)))
             {
-                try
-                {
-                    authProvider.SignInWithEmailAndPasswordAsync("notanemailaddress", FirebasePassword).Wait();
-                    Assert.Fail("Sign-in should fail with invalid email.");
-                }
-                catch (Exception e)
-                {
-                    var exception = (FirebaseAuthException)e.InnerException;
-                    exception.Reason.Should().Be(AuthErrorReason.InvalidEmailAddress);
-                }
+                var exception = await Assert.ThrowsAsync<FirebaseAuthException>(() => authProvider.SignInWithEmailAndPasswordAsync("notanemailaddress", FirebasePassword)).ConfigureAwait(false);
+                Assert.Equal(AuthErrorReason.InvalidEmailAddress, exception.Reason);
             }
         }
 
-
-
-        [TestMethod]
-        public void Invalid_password_should_be_reflected_by_failure_reason()
+        [Fact]
+        public async Task InvalidPasswordShouldBeReflectedByFailureReason()
         {
             using (var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey)))
             {
-                try
-                {
-                    authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, "xx" + FirebasePassword).Wait();
-                    Assert.Fail("Sign-in should fail with invalid password.");
-                }
-                catch (Exception e)
-                {
-                    var exception = (FirebaseAuthException)e.InnerException;
-                    exception.Reason.Should().Be(AuthErrorReason.WrongPassword);
-                }
+                var exception = await Assert.ThrowsAsync<FirebaseAuthException>(() => authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, "xx" + FirebasePassword)).ConfigureAwait(false);
+                Assert.Equal(AuthErrorReason.WrongPassword, exception.Reason);
             }
         }
 
-        [TestMethod]
-        public void CreateUserTest()
+        [Fact]
+        public async Task CreateUserTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
-            var email = $"abcd{new Random().Next()}@test.com"; 
+            var auth = await authProvider.CreateUserWithEmailAndPasswordAsync(NewFirebaseEmail, NewFirebasePassword).ConfigureAwait(false);
 
-            var auth = authProvider.SignInWithEmailAndPasswordAsync(email, "test1234").Result;
-
-            auth.User.Email.Should().BeEquivalentTo(email);
-            auth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+            try
+            {
+                Assert.Equal(NewFirebaseEmail, auth.User.Email);
+                Assert.False(string.IsNullOrWhiteSpace(auth.FirebaseToken));
+            }
+            finally
+            {
+                await authProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
         }
 
-        [TestMethod]
-        public void LinkAccountsTest()
+        [Fact]
+        public async Task LinkAccountsTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
-            var email = $"abcd{new Random().Next()}@test.com";
 
-            var auth = authProvider.SignInAnonymouslyAsync().Result;
-            var newAuth = auth.LinkToAsync(email, "test1234").Result;
+            var auth = await authProvider.SignInAnonymouslyAsync().ConfigureAwait(false);
+            try
+            {
+                var newAuth = await auth.LinkToAsync(NewFirebaseEmail, NewFirebasePassword).ConfigureAwait(false);
 
-            newAuth.User.Email.Should().BeEquivalentTo(email);
-            newAuth.User.LocalId.Should().Be(auth.User.LocalId);
-            newAuth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+                Assert.Equal(NewFirebaseEmail, newAuth.User.Email);
+                Assert.Equal(auth.User.LocalId, newAuth.User.LocalId);
+                Assert.False(string.IsNullOrWhiteSpace(newAuth.FirebaseToken));
+            }
+            finally
+            {
+                await authProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
         }
 
-        [TestMethod]
-        public void LinkAccountsFacebookTest()
+        [Fact]
+        public async Task LinkAccountsFacebookTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = authProvider.SignInAnonymouslyAsync().Result;
-            var newAuth = auth.LinkToAsync(FirebaseAuthType.Facebook, FacebookAccessToken).Result;
+            var auth = await authProvider.SignInAnonymouslyAsync().ConfigureAwait(false);
+            var newAuth = await auth.LinkToAsync(FirebaseAuthType.Facebook, FacebookAccessToken).ConfigureAwait(false);
 
-            newAuth.User.LocalId.Should().Be(auth.User.LocalId);
-            newAuth.User.FirstName.Should().BeEquivalentTo(FacebookTestUserFirstName);
-            newAuth.FirebaseToken.Should().NotBeNullOrWhiteSpace();
+            Assert.Equal(auth.User.LocalId, newAuth.User.LocalId);
+            Assert.Equal(FacebookTestUserFirstName, newAuth.User.FirstName);
+            Assert.False(string.IsNullOrWhiteSpace(newAuth.FirebaseToken));
         }
 
-        [TestMethod]
-        public void GetLinkedAccountsTest()
+        [Fact]
+        public async Task GetLinkedAccountsTest()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
-            var email = $"abcd{new Random().Next()}@test.com";
 
-            var auth = authProvider.CreateUserWithEmailAndPasswordAsync(email, "test1234").Result;
-            var linkedAccounts = authProvider.GetLinkedAccountsAsync(email).Result;
+            var auth = await authProvider.CreateUserWithEmailAndPasswordAsync(NewFirebaseEmail, NewFirebasePassword).ConfigureAwait(false);
+            try
+            {
+                var linkedAccounts = await authProvider.GetLinkedAccountsAsync(NewFirebaseEmail).ConfigureAwait(false);
 
-            linkedAccounts.IsRegistered.Should().BeTrue();
-            linkedAccounts.Providers.Single().Should().BeEquivalentTo(FirebaseAuthType.EmailAndPassword);
+                Assert.True(linkedAccounts.IsRegistered);
+                Assert.Equal(FirebaseAuthType.EmailAndPassword, linkedAccounts.Providers.Single());
+            }
+            finally
+            {
+                await authProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
         }
 
-        [TestMethod]
-        public void RefreshAccessToken()
+        [Fact]
+        public async Task RefreshAccessToken()
         {
             var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = authProvider.SignInWithOAuthAsync(FirebaseAuthType.Facebook, FacebookAccessToken).Result;
-            var originalToken = auth.FirebaseToken;
-            
-            // simulate the token already expired
-            auth.Created = DateTime.MinValue;
-            
-            var freshAuth = auth.GetFreshAuthAsync().Result;
+            var auth = await authProvider.SignInAnonymouslyAsync().ConfigureAwait(false);
+            try
+            {
+                var originalToken = auth.FirebaseToken;
 
-            freshAuth.FirebaseToken.Should().NotBe(originalToken);
+                // simulate the token already expired
+                auth.Created = DateTime.MinValue;
+
+                var freshAuth = await auth.GetFreshAuthAsync().ConfigureAwait(false);
+
+                //Disabled because Firebase doesn't send new ID token every time for some reason
+                //Assert.NotEqual(originalToken, freshAuth.FirebaseToken);
+
+                Assert.False(string.IsNullOrWhiteSpace(freshAuth.FirebaseToken));
+            }
+            finally
+            {
+                await authProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
         }
     }
 }

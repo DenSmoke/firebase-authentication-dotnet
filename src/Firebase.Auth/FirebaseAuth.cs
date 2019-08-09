@@ -1,7 +1,7 @@
 ﻿namespace Firebase.Auth
 {
-    using Newtonsoft.Json;
     using System;
+    using System.Text.Json.Serialization;
 
     /// <summary>
     /// The firebase auth.
@@ -10,13 +10,13 @@
     {
         public FirebaseAuth()
         {
-            this.Created = DateTime.Now;
+            Created = DateTime.Now;
         }
 
         /// <summary>
         /// Gets or sets the firebase token which can be used for authenticated queries. 
         /// </summary>
-        [JsonProperty("idToken")]
+        [JsonPropertyName("idToken")]
         public string FirebaseToken
         {
             get;
@@ -26,7 +26,7 @@
         /// <summary>
         /// Gets or sets the refresh token of the underlying service which can be used to get a new access token. 
         /// </summary>
-        [JsonProperty("refreshToken")]
+        [JsonPropertyName("refreshToken")]
         public string RefreshToken
         {
             get;
@@ -36,7 +36,8 @@
         /// <summary>
         /// Gets or sets the numbers of seconds since <see cref="Created"/> when the token expires.
         /// </summary>
-        [JsonProperty("expiresIn")]
+        [JsonPropertyName("expiresIn")]
+        [JsonConverter(typeof(JsonStringIntConverter))]
         public int ExpiresIn
         {
             get;
@@ -67,7 +68,7 @@
         public bool IsExpired()
         {
             // include a small 10s window when the token is technically valid but it's a good idea to refresh it already.
-            return DateTime.Now > this.Created.AddSeconds(this.ExpiresIn - 10); 
+            return DateTime.Now > Created.AddSeconds(ExpiresIn - 10);
         }
     }
 }

@@ -11,13 +11,13 @@
         /// <param name="apiKey"> The api key of your Firebase app. </param>
         public FirebaseConfig(string apiKey)
         {
-            this.ApiKey = apiKey;
+            ApiKey = apiKey;
         }
 
         /// <summary>
         /// Gets or sets the api key of your Firebase app. 
         /// </summary>
-        public string ApiKey 
+        public string ApiKey
         {
             get;
             set;

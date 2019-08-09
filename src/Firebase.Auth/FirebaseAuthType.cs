@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.ComponentModel;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace Firebase.Auth
 {
@@ -39,5 +36,5 @@ namespace Firebase.Auth
         /// </summary>
         [EnumMember(Value = "password")]
         EmailAndPassword
-    } 
+    }
 }

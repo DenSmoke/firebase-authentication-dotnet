@@ -1,17 +1,17 @@
 ﻿namespace Firebase.Auth
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
+
     using System.Collections.Generic;
+    using System.Text.Json.Serialization;
 
     /// <summary>
     /// More info at <see cref="https://developers.google.com/identity/toolkit/web/reference/relyingparty/createAuthUri"/>.
     /// </summary>
     public class ProviderQueryResult
     {
-        internal ProviderQueryResult()
+        public ProviderQueryResult()
         {
-            this.Providers = new List<FirebaseAuthType>();
+            Providers = new List<FirebaseAuthType>();
         }
 
         public string Email
@@ -20,36 +20,37 @@
             set;
         }
 
-        [JsonProperty("registered")]
+        [JsonPropertyName("registered")]
         public bool IsRegistered
         {
             get;
             set;
         }
 
-        [JsonProperty("forExistingProvider")]
+        [JsonPropertyName("forExistingProvider")]
         public bool IsForExistingProvider
         {
             get;
             set;
         }
 
-        [JsonProperty("authUri")]
+        [JsonPropertyName("authUri")]
         public string AuthUri
         {
             get;
             set;
         }
 
-        [JsonProperty("providerId")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonPropertyName("providerId")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public FirebaseAuthType? ProviderId
         {
             get;
             set;
         }
 
-        [JsonProperty("allProviders", ItemConverterType = typeof(StringEnumConverter))]
+        [JsonPropertyName("allProviders")]
+        [JsonConverter(typeof(JsonStringListOfEnumConverter<FirebaseAuthType>))]
         public List<FirebaseAuthType> Providers
         {
             get;

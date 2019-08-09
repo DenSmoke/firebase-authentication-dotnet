@@ -4,13 +4,13 @@
 
     public class FirebaseAuthException : Exception
     {
-        public FirebaseAuthException(string requestUrl, string requestData, string responseData, Exception innerException, AuthErrorReason reason = AuthErrorReason.Undefined) 
+        public FirebaseAuthException(string requestUrl, string requestData, string responseData, Exception innerException, AuthErrorReason reason = AuthErrorReason.Undefined)
             : base(GenerateExceptionMessage(requestUrl, requestData, responseData, reason), innerException)
         {
-            this.RequestUrl = requestUrl;
-            this.RequestData = requestData;
-            this.ResponseData = responseData;
-            this.Reason = reason;
+            RequestUrl = requestUrl;
+            RequestData = requestData;
+            ResponseData = responseData;
+            Reason = reason;
         }
 
         /// <summary>
@@ -20,7 +20,7 @@
         {
             get;
         }
-        
+
         public string RequestUrl
         {
             get;

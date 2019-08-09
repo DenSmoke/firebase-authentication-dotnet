@@ -8,18 +8,18 @@
     /// </summary>
     public class FirebaseAuthLink : FirebaseAuth
     {
-        internal FirebaseAuthLink()
+        public FirebaseAuthLink()
         {
         }
 
         public FirebaseAuthLink(IFirebaseAuthProvider authProvider, FirebaseAuth auth)
         {
-            this.CopyPropertiesLocally(authProvider, auth);
+            CopyPropertiesLocally(authProvider, auth);
         }
 
         public event EventHandler<FirebaseAuthEventArgs> FirebaseAuthRefreshed;
 
-        internal IFirebaseAuthProvider AuthProvider 
+        internal IFirebaseAuthProvider AuthProvider
         {
             get;
             set;
@@ -33,9 +33,9 @@
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         public async Task<FirebaseAuthLink> LinkToAsync(string email, string password)
         {
-            var auth = await this.AuthProvider.LinkAccountsAsync(this, email, password).ConfigureAwait(false);
+            var auth = await AuthProvider.LinkAccountsAsync(this, email, password).ConfigureAwait(false);
 
-            this.CopyPropertiesLocally(auth.AuthProvider, auth);
+            CopyPropertiesLocally(auth.AuthProvider, auth);
 
             return this;
         }
@@ -48,9 +48,9 @@
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
         public async Task<FirebaseAuthLink> LinkToAsync(FirebaseAuthType authType, string oauthAccessToken)
         {
-            var auth = await this.AuthProvider.LinkAccountsAsync(this, authType, oauthAccessToken).ConfigureAwait(false);
+            var auth = await AuthProvider.LinkAccountsAsync(this, authType, oauthAccessToken).ConfigureAwait(false);
 
-            this.CopyPropertiesLocally(auth.AuthProvider, auth);
+            CopyPropertiesLocally(auth.AuthProvider, auth);
 
             return this;
         }
@@ -62,28 +62,28 @@
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
         public async Task<FirebaseAuthLink> UnlinkFromAsync(FirebaseAuthType authType)
         {
-            var auth = await this.AuthProvider.UnlinkAccountsAsync(this, authType).ConfigureAwait(false);
+            var auth = await AuthProvider.UnlinkAccountsAsync(this, authType).ConfigureAwait(false);
 
-            this.CopyPropertiesLocally(auth.AuthProvider, auth);
+            CopyPropertiesLocally(auth.AuthProvider, auth);
 
             return this;
         }
 
         public async Task RefreshUserDetails()
         {
-            if (this.AuthProvider != null && !string.IsNullOrEmpty(this.FirebaseToken))
+            if (AuthProvider != null && !string.IsNullOrEmpty(FirebaseToken))
             {
-                this.User = await this.AuthProvider.GetUserAsync(this.FirebaseToken).ConfigureAwait(false);
+                User = await AuthProvider.GetUserAsync(FirebaseToken).ConfigureAwait(false);
             }
         }
 
         public async Task<FirebaseAuthLink> GetFreshAuthAsync()
         {
-            if (this.IsExpired())
+            if (IsExpired())
             {
-                var auth = await this.AuthProvider.RefreshAuthAsync(this).ConfigureAwait(false);
-                this.CopyPropertiesLocally(auth.AuthProvider, auth);
-                this.OnFirebaseAuthRefreshed(auth);
+                var auth = await AuthProvider.RefreshAuthAsync(this).ConfigureAwait(false);
+                CopyPropertiesLocally(auth.AuthProvider, auth);
+                OnFirebaseAuthRefreshed(auth);
             }
 
             return this;
@@ -91,29 +91,29 @@
 
         public async Task<FirebaseAuthLink> UpdateProfileAsync(string displayName, string photoUrl)
         {
-            var auth = await this.AuthProvider.UpdateProfileAsync(this.FirebaseToken, displayName, photoUrl).ConfigureAwait(false);
+            var auth = await AuthProvider.UpdateProfileAsync(FirebaseToken, displayName, photoUrl).ConfigureAwait(false);
 
-            this.CopyPropertiesLocally(auth.AuthProvider, auth);
+            CopyPropertiesLocally(auth.AuthProvider, auth);
 
             return this;
         }
 
         protected void OnFirebaseAuthRefreshed(FirebaseAuth auth)
         {
-            this.FirebaseAuthRefreshed?.Invoke(this, new FirebaseAuthEventArgs(auth));
+            FirebaseAuthRefreshed?.Invoke(this, new FirebaseAuthEventArgs(auth));
         }
 
         private void CopyPropertiesLocally(IFirebaseAuthProvider authProvider, FirebaseAuth auth)
         {
-            this.AuthProvider = authProvider;
+            AuthProvider = authProvider;
 
             if (auth != null)
             {
-                this.User = auth.User;
-                this.Created = auth.Created;
-                this.ExpiresIn = auth.ExpiresIn;
-                this.RefreshToken = auth.RefreshToken;
-                this.FirebaseToken = auth.FirebaseToken;
+                User = auth.User;
+                Created = auth.Created;
+                ExpiresIn = auth.ExpiresIn;
+                RefreshToken = auth.RefreshToken;
+                FirebaseToken = auth.FirebaseToken;
             }
         }
     }

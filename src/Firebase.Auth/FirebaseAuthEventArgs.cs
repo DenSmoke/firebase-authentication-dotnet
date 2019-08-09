@@ -8,7 +8,7 @@
 
         public FirebaseAuthEventArgs(FirebaseAuth auth)
         {
-            this.FirebaseAuth = auth;
+            FirebaseAuth = auth;
         }
     }
 }
