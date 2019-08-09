@@ -9,7 +9,7 @@
     /// </summary>
     public class ProviderQueryResult
     {
-        internal ProviderQueryResult()
+        public ProviderQueryResult()
         {
             this.Providers = new List<FirebaseAuthType>();
         }
@@ -41,8 +41,8 @@
             set;
         }
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         [JsonPropertyName("providerId")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public FirebaseAuthType? ProviderId
         {
             get;
@@ -50,7 +50,7 @@
         }
 
         [JsonPropertyName("allProviders")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringListOfEnumConverter<FirebaseAuthType>))]
         public List<FirebaseAuthType> Providers
         {
             get;
