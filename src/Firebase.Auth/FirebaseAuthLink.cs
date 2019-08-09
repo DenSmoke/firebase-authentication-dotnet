@@ -8,7 +8,7 @@
     /// </summary>
     public class FirebaseAuthLink : FirebaseAuth
     {
-        internal FirebaseAuthLink()
+        public FirebaseAuthLink()
         {
         }
 
