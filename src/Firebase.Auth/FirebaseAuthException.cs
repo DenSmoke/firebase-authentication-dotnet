@@ -16,32 +16,20 @@
         /// <summary>
         /// Post data passed to the authentication service.
         /// </summary>
-        public string RequestData
-        {
-            get;
-        }
+        public string RequestData { get; }
 
-        public string RequestUrl
-        {
-            get;
-        }
+        public string RequestUrl { get; }
 
         /// <summary>
         /// Response from the authentication service.
         /// </summary>
-        public string ResponseData
-        {
-            get;
-        }
+        public string ResponseData { get; }
 
         /// <summary>
         /// indicates why a login failed. If not resolved, defaults to
         /// <see cref="AuthErrorReason.Undefined"/>.
         /// </summary>
-        public AuthErrorReason Reason
-        {
-            get;
-        }
+        public AuthErrorReason Reason { get; }
 
         private static string GenerateExceptionMessage(string requestUrl, string requestData, string responseData, AuthErrorReason errorReason)
         {
