@@ -1,16 +1,16 @@
 # FirebaseAuthentication.net
-[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/rwmdgqcb7is2clqp?svg=true)](https://ci.appveyor.com/project/bezysoftware/firebase-authentication-dotnet)
+[![Build Status](https://dev.azure.com/CompLead/TechWiz/_apis/build/status/firebase-authentication-dotnet-CI?branchName=master)](https://dev.azure.com/CompLead/TechWiz/_build/latest?definitionId=13&branchName=master)
 
 Firebase authentication library. It can generate Firebase auth token based on given OAuth token (issued by Google, Facebook...). This Firebase token can then be used with REST queries against Firebase Database endpoints. See [FirebaseDatabase.net](https://github.com/step-up-labs/firebase-database-dotnet) for a C# library wrapping the Firebase Database REST queries.
 
 ## Installation
 ```csharp
 // Install release version
-Install-Package FirebaseAuthentication.net
+Install-Package DenSmoke.FirebaseAuthentication.net
 ```
 
 ## Supported frameworks
-* .NET Standard 1.1 - see https://github.com/dotnet/standard/blob/master/docs/versions.md for compatibility matrix
+* .NET Standard 2.0 - see https://github.com/dotnet/standard/blob/master/docs/versions.md for compatibility matrix
 
 ## Supported scenarios
 * Login with Google / Facebook / Github / Twitter OAuth tokens
