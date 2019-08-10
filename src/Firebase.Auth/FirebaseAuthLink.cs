@@ -1,7 +1,8 @@
-﻿namespace Firebase.Auth
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Firebase.Auth
 {
-    using System;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// The firebase auth which can be linked to another credentials.
@@ -12,18 +13,11 @@
         {
         }
 
-        public FirebaseAuthLink(IFirebaseAuthProvider authProvider, FirebaseAuth auth)
-        {
-            CopyPropertiesLocally(authProvider, auth);
-        }
+        public FirebaseAuthLink(IFirebaseAuthProvider authProvider, FirebaseAuth auth) => CopyPropertiesLocally(authProvider, auth);
 
         public event EventHandler<FirebaseAuthEventArgs> FirebaseAuthRefreshed;
 
-        internal IFirebaseAuthProvider AuthProvider
-        {
-            get;
-            set;
-        }
+        internal IFirebaseAuthProvider AuthProvider { get; set; }
 
         /// <summary>
         /// Links the user with an email and password.  
@@ -98,10 +92,7 @@
             return this;
         }
 
-        protected void OnFirebaseAuthRefreshed(FirebaseAuth auth)
-        {
-            FirebaseAuthRefreshed?.Invoke(this, new FirebaseAuthEventArgs(auth));
-        }
+        protected void OnFirebaseAuthRefreshed(FirebaseAuth auth) => FirebaseAuthRefreshed?.Invoke(this, new FirebaseAuthEventArgs(auth));
 
         private void CopyPropertiesLocally(IFirebaseAuthProvider authProvider, FirebaseAuth auth)
         {

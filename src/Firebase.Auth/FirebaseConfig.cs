@@ -9,18 +9,11 @@
         /// Initializes a new instance of the <see cref="FirebaseConfig"/> class.
         /// </summary>
         /// <param name="apiKey"> The api key of your Firebase app. </param>
-        public FirebaseConfig(string apiKey)
-        {
-            ApiKey = apiKey;
-        }
+        public FirebaseConfig(string apiKey) => ApiKey = apiKey;
 
         /// <summary>
         /// Gets or sets the api key of your Firebase app. 
         /// </summary>
-        public string ApiKey
-        {
-            get;
-            set;
-        }
+        public string ApiKey { get; set; }
     }
 }

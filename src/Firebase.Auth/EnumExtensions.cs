@@ -7,7 +7,7 @@
 
     public static class EnumExtensions
     {
-        public static string ToEnumString<T>(this T type)
+        public static string ToEnumString<T>(this T type) where T : struct, IConvertible
         {
             var enumType = typeof(T);
             var name = Enum.GetName(enumType, type);

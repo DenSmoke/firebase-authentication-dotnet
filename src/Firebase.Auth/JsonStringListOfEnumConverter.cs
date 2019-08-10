@@ -12,30 +12,25 @@ namespace Firebase.Auth
         public override List<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
-            {
                 throw new JsonException();
-            }
 
             var value = new List<T>();
 
             while (reader.Read())
             {
                 if (reader.TokenType == JsonTokenType.EndArray)
-                {
                     return value;
-                }
 
                 if (reader.TokenType != JsonTokenType.String)
-                {
                     throw new JsonException();
-                }
 
                 var enumType = typeof(T);
                 var str = reader.GetString();
                 foreach (var name in Enum.GetNames(enumType))
                 {
                     var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetField(name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
-                    if (enumMemberAttribute.Value == str) value.Add((T)Enum.Parse(enumType, name));
+                    if (enumMemberAttribute.Value == str)
+                        value.Add((T)Enum.Parse(enumType, name));
                 }
             }
 
@@ -46,13 +41,8 @@ namespace Firebase.Auth
         {
             writer.WriteStartArray();
 
-            var enumType = typeof(T);
             foreach (var item in value)
-            {
-                var name = Enum.GetName(enumType, item);
-                var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetField(name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
-                writer.WriteStringValue(enumMemberAttribute.Value);
-            }
+                writer.WriteStringValue(item.ToEnumString<T>());
 
             writer.WriteEndArray();
         }

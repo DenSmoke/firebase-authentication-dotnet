@@ -1,6 +1,7 @@
-﻿namespace Firebase.Auth
+﻿using System.Threading.Tasks;
+
+namespace Firebase.Auth
 {
-    using System.Threading.Tasks;
 
     /// <summary>
     /// The auth token provider.
@@ -152,11 +153,5 @@
         /// <param name="auth"> The authenticated user to have its access token refreshed. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth);
-
-        /// <summary>
-        /// Deletes the user with a recent Firebase Token.
-        /// </summary>
-        /// <param name="token"> Recent Firebase Token. </param>
-        Task DeleteUser(string firebaseToken);
     }
 }

@@ -1,11 +1,12 @@
-﻿namespace Firebase.Auth
+﻿using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace Firebase.Auth
 {
-    using System;
-    using System.Diagnostics;
-    using System.Net.Http;
-    using System.Text;
-    using System.Text.Json;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// The auth token provider.
@@ -39,6 +40,12 @@
             client = new HttpClient();
         }
 
+
+        /// <summary>
+        /// Disposes all allocated resources. 
+        /// </summary>
+        public void Dispose() => client.Dispose();
+
         /// <summary>
         /// Sign in with a custom token. You would usually create and sign such a token on your server to integrate with your existing authentiocation system.
         /// </summary>
@@ -63,7 +70,7 @@
             var responseData = "N/A";
             try
             {
-                var response = await client.PostAsync(new Uri(string.Format(GoogleGetUser, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                using var response = await client.PostAsync(new Uri(string.Format(GoogleGetUser, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
@@ -82,10 +89,7 @@
         /// Sends user an email with a link to verify his email address.
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
-        public async Task<User> GetUserAsync(FirebaseAuth auth)
-        {
-            return await GetUserAsync(auth.FirebaseToken).ConfigureAwait(false);
-        }
+        public async Task<User> GetUserAsync(FirebaseAuth auth) => await GetUserAsync(auth.FirebaseToken).ConfigureAwait(false);
 
         /// <summary>
         /// Using the provided access token from third party auth provider (google, facebook...), get the firebase auth with token and basic user credentials.
@@ -209,16 +213,6 @@
         /// Deletes the user with a recent Firebase Token.
         /// </summary>
         /// <param name="token"> Recent Firebase Token. </param>
-        [Obsolete("This method will be removed in future release in favor of DeleteUserAsync")]
-        public Task DeleteUser(string firebaseToken)
-        {
-            return DeleteUserAsync(firebaseToken);
-        }
-
-        /// <summary>
-        /// Deletes the user with a recent Firebase Token.
-        /// </summary>
-        /// <param name="token"> Recent Firebase Token. </param>
         public async Task DeleteUserAsync(string firebaseToken)
         {
             var content = $"{{ \"idToken\": \"{firebaseToken}\" }}";
@@ -226,7 +220,7 @@
 
             try
             {
-                var response = await client.PostAsync(new Uri(string.Format(GoogleDeleteUserUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                using var response = await client.PostAsync(new Uri(string.Format(GoogleDeleteUserUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 response.EnsureSuccessStatusCode();
@@ -246,7 +240,7 @@
         {
             var content = $"{{\"requestType\":\"PASSWORD_RESET\",\"email\":\"{email}\"}}";
 
-            var response = await client.PostAsync(new Uri(string.Format(GoogleGetConfirmationCodeUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            using var response = await client.PostAsync(new Uri(string.Format(GoogleGetConfirmationCodeUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
         }
@@ -259,7 +253,7 @@
         {
             var content = $"{{\"requestType\":\"VERIFY_EMAIL\",\"idToken\":\"{firebaseToken}\"}}";
 
-            var response = await client.PostAsync(new Uri(string.Format(GoogleGetConfirmationCodeUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            using var response = await client.PostAsync(new Uri(string.Format(GoogleGetConfirmationCodeUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
         }
@@ -268,10 +262,7 @@
         /// Sends user an email with a link to verify his email address.
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
-        public async Task SendEmailVerificationAsync(FirebaseAuth auth)
-        {
-            await SendEmailVerificationAsync(auth.FirebaseToken).ConfigureAwait(false);
-        }
+        public async Task SendEmailVerificationAsync(FirebaseAuth auth) => await SendEmailVerificationAsync(auth.FirebaseToken).ConfigureAwait(false);
 
         /// <summary>
         /// Links the given <see cref="firebaseToken"/> with an email and password. 
@@ -294,10 +285,7 @@
         /// <param name="email"> The email. </param>
         /// <param name="password"> The password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        public async Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, string email, string password)
-        {
-            return await LinkAccountsAsync(auth.FirebaseToken, email, password).ConfigureAwait(false);
-        }
+        public async Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, string email, string password) => await LinkAccountsAsync(auth.FirebaseToken, email, password).ConfigureAwait(false);
 
         /// <summary>
         /// Links the given <see cref="firebaseToken"/> with an account from a third party provider.
@@ -321,10 +309,7 @@
         /// <param name="authType"> The auth type.  </param>
         /// <param name="oauthAccessToken"> The access token retrieved from login provider of your choice. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        public async Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType, string oauthAccessToken)
-        {
-            return await LinkAccountsAsync(auth.FirebaseToken, authType, oauthAccessToken).ConfigureAwait(false);
-        }
+        public async Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType, string oauthAccessToken) => await LinkAccountsAsync(auth.FirebaseToken, authType, oauthAccessToken).ConfigureAwait(false);
 
         /// <summary>
         /// Unlinks the given <see cref="authType"/> from the account associated with <see cref="firebaseToken"/>.
@@ -334,15 +319,7 @@
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
         public async Task<FirebaseAuthLink> UnlinkAccountsAsync(string firebaseToken, FirebaseAuthType authType)
         {
-            string providerId = null;
-            if (authType == FirebaseAuthType.EmailAndPassword)
-            {
-                providerId = authType.ToEnumString();
-            }
-            else
-            {
-                providerId = GetProviderId(authType);
-            }
+            var providerId = authType == FirebaseAuthType.EmailAndPassword ? authType.ToEnumString() : GetProviderId(authType);
 
             var content = $"{{\"idToken\":\"{firebaseToken}\",\"deleteProvider\":[\"{providerId}\"]}}";
 
@@ -355,10 +332,7 @@
         /// <param name="auth"> The auth. </param>
         /// <param name="authType"> The auth type.  </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        public async Task<FirebaseAuthLink> UnlinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType)
-        {
-            return await UnlinkAccountsAsync(auth.FirebaseToken, authType).ConfigureAwait(false);
-        }
+        public async Task<FirebaseAuthLink> UnlinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType) => await UnlinkAccountsAsync(auth.FirebaseToken, authType).ConfigureAwait(false);
 
         /// <summary>
         /// Gets a list of accounts linked to given email.
@@ -372,7 +346,7 @@
 
             try
             {
-                var response = await client.PostAsync(new Uri(string.Format(GoogleCreateAuthUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                using var response = await client.PostAsync(new Uri(string.Format(GoogleCreateAuthUrl, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 response.EnsureSuccessStatusCode();
@@ -397,7 +371,7 @@
 
             try
             {
-                var response = await client.PostAsync(new Uri(string.Format(GoogleRefreshAuth, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).ConfigureAwait(false);
+                using var response = await client.PostAsync(new Uri(string.Format(GoogleRefreshAuth, authConfig.ApiKey)), new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).ConfigureAwait(false);
 
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var refreshAuth = JsonSerializer.Deserialize<RefreshAuth>(responseData);
@@ -417,21 +391,13 @@
             }
         }
 
-        /// <summary>
-        /// Disposes all allocated resources. 
-        /// </summary>
-        public void Dispose()
-        {
-            client.Dispose();
-        }
-
         private async Task<FirebaseAuthLink> ExecuteWithPostContentAsync(string googleUrl, string postContent)
         {
             var responseData = "N/A";
 
             try
             {
-                var response = await client.PostAsync(new Uri(string.Format(googleUrl, authConfig.ApiKey)), new StringContent(postContent, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                using var response = await client.PostAsync(new Uri(string.Format(googleUrl, authConfig.ApiKey)), new StringContent(postContent, Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 responseData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 response.EnsureSuccessStatusCode();
