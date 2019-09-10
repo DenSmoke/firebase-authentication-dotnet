@@ -16,18 +16,7 @@ namespace Firebase.Auth
         [JsonPropertyName("registered")]
         public bool IsRegistered { get; set; }
 
-        [JsonPropertyName("forExistingProvider")]
-        public bool IsForExistingProvider { get; set; }
-
-        [JsonPropertyName("authUri")]
-        public string AuthUri { get; set; }
-
-        [JsonPropertyName("providerId")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public FirebaseAuthType? ProviderId { get; set; }
-
         [JsonPropertyName("allProviders")]
-        [JsonConverter(typeof(JsonStringListOfEnumConverter<FirebaseAuthType>))]
         public List<FirebaseAuthType> Providers { get; set; }
     }
 }
