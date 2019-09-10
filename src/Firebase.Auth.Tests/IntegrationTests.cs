@@ -19,6 +19,7 @@
         private readonly string FirebasePassword = config.GetValue<string>(nameof(FirebasePassword));
         private readonly string NewFirebaseEmail = config.GetValue<string>(nameof(NewFirebaseEmail));
         private readonly string NewFirebasePassword = config.GetValue<string>(nameof(NewFirebasePassword));
+        private readonly string FirebaseDisplayName = config.GetValue<string>(nameof(FirebaseDisplayName));
 #pragma warning restore IDE1006
 
         [Fact]
@@ -152,20 +153,39 @@
         {
             using var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
-            var auth = await authProvider.SignInAnonymouslyAsync().ConfigureAwait(false);
+            var auth = await authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, FirebasePassword).ConfigureAwait(false);
+
+            var originalToken = auth.FirebaseToken;
+
+            // simulate the token already expired
+            auth.Created = DateTime.MinValue;
+
+            var freshAuth = await auth.GetFreshAuthAsync().ConfigureAwait(false);
+
+            //Disabled because Firebase doesn't send new ID token every time for some reason
+            //Assert.NotEqual(originalToken, freshAuth.FirebaseToken);
+
+            Assert.False(string.IsNullOrWhiteSpace(freshAuth.FirebaseToken));
+        }
+
+        [Fact]
+        public async Task GetUserTest()
+        {
+            using var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
+
+            var auth = await authProvider.SignInWithEmailAndPasswordAsync(FirebaseEmail, FirebasePassword).ConfigureAwait(false);
+            var user = await authProvider.GetUserAsync(auth).ConfigureAwait(false);
+
+            Assert.True(user.IsEmailVerified);
+            Assert.Equal(FirebaseDisplayName, user.DisplayName);
+
+            var newUserDisplayName = "test";
+            auth = await authProvider.CreateUserWithEmailAndPasswordAsync(NewFirebaseEmail, NewFirebasePassword, newUserDisplayName);
             try
             {
-                var originalToken = auth.FirebaseToken;
-
-                // simulate the token already expired
-                auth.Created = DateTime.MinValue;
-
-                var freshAuth = await auth.GetFreshAuthAsync().ConfigureAwait(false);
-
-                //Disabled because Firebase doesn't send new ID token every time for some reason
-                //Assert.NotEqual(originalToken, freshAuth.FirebaseToken);
-
-                Assert.False(string.IsNullOrWhiteSpace(freshAuth.FirebaseToken));
+                user = await authProvider.GetUserAsync(auth).ConfigureAwait(false);
+                Assert.False(user.IsEmailVerified);
+                Assert.Equal(newUserDisplayName, user.DisplayName);
             }
             finally
             {
