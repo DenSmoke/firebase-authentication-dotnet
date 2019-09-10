@@ -16,15 +16,15 @@ namespace Firebase.Auth
     public class FirebaseAuthProvider : IDisposable, IFirebaseAuthProvider
     {
         private const string GoogleRefreshAuth = "https://securetoken.googleapis.com/v1/token?key={0}";
-        private const string GoogleCustomAuthUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key={0}";
-        private const string GoogleGetUser = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key={0}";
-        private const string GoogleIdentityUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyAssertion?key={0}";
-        private const string GoogleSignUpUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key={0}";
-        private const string GooglePasswordUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={0}";
-        private const string GoogleDeleteUserUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key={0}";
-        private const string GoogleGetConfirmationCodeUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key={0}";
-        private const string GoogleSetAccountUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key={0}";
-        private const string GoogleCreateAuthUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/createAuthUri?key={0}";
+        private const string GoogleCustomAuthUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={0}";
+        private const string GoogleGetUser = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={0}";
+        private const string GoogleIdentityUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key={0}";
+        private const string GoogleSignUpUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={0}";
+        private const string GooglePasswordUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={0}";
+        private const string GoogleDeleteUserUrl = "https://identitytoolkit.googleapis.com/v1/accounts:delete?key={0}";
+        private const string GoogleGetConfirmationCodeUrl = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={0}";
+        private const string GoogleSetAccountUrl = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}";
+        private const string GoogleCreateAuthUrl = "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key={0}";
 
         private const string ProfileDeleteDisplayName = "DISPLAY_NAME";
         private const string ProfileDeletePhotoUrl = "PHOTO_URL";
