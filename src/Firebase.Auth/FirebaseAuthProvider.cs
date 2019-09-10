@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -75,7 +77,7 @@ namespace Firebase.Auth
                 response.EnsureSuccessStatusCode();
 
                 var resultJson = JsonDocument.Parse(responseData);
-                var user = JsonSerializer.Deserialize<User>(resultJson.RootElement.GetProperty("users").ToString());
+                var user = JsonSerializer.Deserialize<IEnumerable<User>>(resultJson.RootElement.GetProperty("users").ToString()).Single();
                 return user;
             }
             catch (Exception ex)
