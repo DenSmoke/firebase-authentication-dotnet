@@ -153,5 +153,13 @@ namespace Firebase.Auth
         /// <param name="auth"> The authenticated user to have its access token refreshed. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth);
+
+        /// <summary>
+        ///     Change user's password with his token.
+        /// </summary>
+        /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
+        /// <param name="password"> The new password. </param>
+        /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
+        Task<FirebaseAuthLink> ChangeUserPasswordAsync(string firebaseToken, string password);
     }
 }
