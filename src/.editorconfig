@@ -208,3 +208,12 @@ dotnet_naming_style.начинается_с__.required_prefix = _
 dotnet_naming_style.начинается_с__.required_suffix = 
 dotnet_naming_style.начинается_с__.word_separator = 
 dotnet_naming_style.начинается_с__.capitalization = camel_case
+
+# CA1303: Не передавать литералы в качестве локализованных параметров
+dotnet_diagnostic.CA1303.severity = suggestion
+
+# CA1056: Свойства URI не должны быть строками
+dotnet_diagnostic.CA1056.severity = suggestion
+
+# CA1054: Параметры URI не должны быть строками
+dotnet_diagnostic.CA1054.severity = suggestion
