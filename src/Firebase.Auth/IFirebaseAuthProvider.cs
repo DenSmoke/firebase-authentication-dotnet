@@ -125,15 +125,15 @@ namespace Firebase.Auth
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
-        /// <returns> The <see cref="User"/>. </returns>
-        Task<User> GetUserAsync(string firebaseToken);
+        /// <returns> The <see cref="FirebaseUser"/>. </returns>
+        Task<FirebaseUser> GetUserAsync(string firebaseToken);
 
         /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
-        /// <returns> The <see cref="User"/>. </returns>
-        Task<User> GetUserAsync(FirebaseAuth auth);
+        /// <returns> The <see cref="FirebaseUser"/>. </returns>
+        Task<FirebaseUser> GetUserAsync(FirebaseAuth auth);
 
         /// <summary>
         /// Sends user an email with a link to verify his email address.

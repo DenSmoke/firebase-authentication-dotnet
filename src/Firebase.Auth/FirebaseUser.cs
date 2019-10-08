@@ -7,7 +7,7 @@ namespace Firebase.Auth
     /// <summary>
     /// Basic information about the logged in user.
     /// </summary>
-    public class User
+    public class FirebaseUser
     {
         /// <summary>
         /// Gets or sets the local id.

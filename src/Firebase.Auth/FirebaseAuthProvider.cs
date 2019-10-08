@@ -66,8 +66,8 @@ namespace Firebase.Auth
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
-        /// <returns> The <see cref="User"/>. </returns>
-        public async Task<User> GetUserAsync(string firebaseToken)
+        /// <returns> The <see cref="FirebaseUser"/>. </returns>
+        public async Task<FirebaseUser> GetUserAsync(string firebaseToken)
         {
             var content = $"{{\"idToken\":\"{firebaseToken}\"}}";
             var responseData = "N/A";
@@ -78,7 +78,7 @@ namespace Firebase.Auth
                 response.EnsureSuccessStatusCode();
 
                 var resultJson = JsonDocument.Parse(responseData);
-                var user = JsonSerializer.Deserialize<IEnumerable<User>>(resultJson.RootElement.GetProperty("users").ToString()).Single();
+                var user = JsonSerializer.Deserialize<IEnumerable<FirebaseUser>>(resultJson.RootElement.GetProperty("users").ToString()).Single();
                 return user;
             }
             catch (Exception ex)
@@ -92,7 +92,7 @@ namespace Firebase.Auth
         /// Sends user an email with a link to verify his email address.
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
-        public async Task<User> GetUserAsync(FirebaseAuth auth) => await GetUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+        public async Task<FirebaseUser> GetUserAsync(FirebaseAuth auth) => await GetUserAsync(auth.FirebaseToken).ConfigureAwait(false);
 
         /// <summary>
         /// Using the provided access token from third party auth provider (google, facebook...), get the firebase auth with token and basic user credentials.
@@ -419,7 +419,7 @@ namespace Firebase.Auth
 
                 response.EnsureSuccessStatusCode();
 
-                var user = JsonSerializer.Deserialize<User>(responseData);
+                var user = JsonSerializer.Deserialize<FirebaseUser>(responseData);
                 var auth = JsonSerializer.Deserialize<FirebaseAuthLink>(responseData);
 
                 auth.AuthProvider = this;

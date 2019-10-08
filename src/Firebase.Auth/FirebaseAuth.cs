@@ -43,7 +43,7 @@
         /// <summary>
         /// Gets or sets the user.
         /// </summary>
-        public User User { get; set; }
+        public FirebaseUser User { get; set; }
 
         /// <summary>
         /// Specifies whether the token already expired. 
