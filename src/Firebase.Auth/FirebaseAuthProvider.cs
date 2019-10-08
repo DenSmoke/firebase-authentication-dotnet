@@ -25,6 +25,7 @@ namespace Firebase.Auth
         private const string GoogleGetConfirmationCodeUrl = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={0}";
         private const string GoogleSetAccountUrl = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}";
         private const string GoogleCreateAuthUrl = "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key={0}";
+        private const string GoogleUpdateUserPassword = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}";
 
         private const string ProfileDeleteDisplayName = "DISPLAY_NAME";
         private const string ProfileDeletePhotoUrl = "PHOTO_URL";
@@ -144,7 +145,21 @@ namespace Firebase.Auth
 
             return await ExecuteWithPostContentAsync(GooglePasswordUrl, content).ConfigureAwait(false);
         }
+        
+        /// <summary>
+        /// Change a password from an user with his token.
+        /// </summary>
+        /// <param name="idToken"> The Token from an user. </param>
+        /// <param name="password"> The new password. </param>
+        /// <returns> The <see cref="FirebaseAuth"/>. </returns>
+        public async Task<FirebaseAuthLink> ChangeUserPassword(string idToken, string password)
+        {
+            var content = $"{{\"idToken\":\"{idToken}\",\"password\":\"{password}\",\"returnSecureToken\":true}}";
 
+            return await this.ExecuteWithPostContentAsync(GoogleUpdateUserPassword, content).ConfigureAwait(false);
+        }
+        
+        
         /// <summary>
         /// Creates new user with given credentials.
         /// </summary>
