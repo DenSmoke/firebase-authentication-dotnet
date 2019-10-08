@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Buffers;
 using System.Buffers.Text;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Firebase.Auth
 {
-    internal class JsonStringIntConverter : JsonConverter<int>
+    public class JsonStringIntConverter : JsonConverter<int>
     {
         public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -20,6 +21,6 @@ namespace Firebase.Auth
             return reader.GetInt32();
         }
 
-        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
+        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options) => writer?.WriteStringValue(value.ToString(CultureInfo.InvariantCulture));
     }
 }

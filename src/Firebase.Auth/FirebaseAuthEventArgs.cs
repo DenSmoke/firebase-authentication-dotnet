@@ -1,14 +1,11 @@
-﻿namespace Firebase.Auth
-{
-    using System;
+﻿using System;
 
+namespace Firebase.Auth
+{
     public class FirebaseAuthEventArgs : EventArgs
     {
-        public readonly FirebaseAuth FirebaseAuth;
+        public FirebaseAuthEventArgs(FirebaseAuth auth) => FirebaseAuth = auth;
 
-        public FirebaseAuthEventArgs(FirebaseAuth auth)
-        {
-            FirebaseAuth = auth;
-        }
+        public FirebaseAuth FirebaseAuth { get; }
     }
 }

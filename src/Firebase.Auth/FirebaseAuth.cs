@@ -1,8 +1,8 @@
-﻿namespace Firebase.Auth
-{
-    using System;
-    using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
+namespace Firebase.Auth
+{
     /// <summary>
     /// The firebase auth.
     /// </summary>
@@ -11,10 +11,7 @@
         //Time window when token should be refreshed
         private const int _tokenRefreshWindowSecond = 6 * 60;
 
-        public FirebaseAuth()
-        {
-            Created = DateTime.Now;
-        }
+        public FirebaseAuth() => Created = DateTime.Now;
 
         /// <summary>
         /// Gets or sets the firebase token which can be used for authenticated queries. 
@@ -48,9 +45,6 @@
         /// <summary>
         /// Specifies whether the token already expired. 
         /// </summary>
-        public bool IsExpired()
-        {
-            return DateTime.Now > Created.AddSeconds(ExpiresIn - _tokenRefreshWindowSecond);
-        }
+        public bool IsExpired() => DateTime.Now > Created.AddSeconds(ExpiresIn - _tokenRefreshWindowSecond);
     }
 }

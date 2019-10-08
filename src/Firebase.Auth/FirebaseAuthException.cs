@@ -1,7 +1,7 @@
-﻿namespace Firebase.Auth
-{
-    using System;
+﻿using System;
 
+namespace Firebase.Auth
+{
     public class FirebaseAuthException : Exception
     {
         public FirebaseAuthException(string requestUrl, string requestData, string responseData, Exception innerException, AuthErrorReason reason = AuthErrorReason.Undefined)
@@ -31,9 +31,18 @@
         /// </summary>
         public AuthErrorReason Reason { get; }
 
-        private static string GenerateExceptionMessage(string requestUrl, string requestData, string responseData, AuthErrorReason errorReason)
+        private static string GenerateExceptionMessage(string requestUrl, string requestData, string responseData, AuthErrorReason errorReason) => $"Exception occured while authenticating.\nUrl: {requestUrl}\nRequest Data: {requestData}\nResponse: {responseData}\nReason: {errorReason}";
+
+        public FirebaseAuthException()
         {
-            return $"Exception occured while authenticating.\nUrl: {requestUrl}\nRequest Data: {requestData}\nResponse: {responseData}\nReason: {errorReason}";
+        }
+
+        public FirebaseAuthException(string message) : base(message)
+        {
+        }
+
+        public FirebaseAuthException(string message, Exception innerException) : base(message, innerException)
+        {
         }
     }
 }

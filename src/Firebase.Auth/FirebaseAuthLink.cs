@@ -9,9 +9,7 @@ namespace Firebase.Auth
     /// </summary>
     public class FirebaseAuthLink : FirebaseAuth
     {
-        public FirebaseAuthLink()
-        {
-        }
+        public FirebaseAuthLink() { }
 
         public FirebaseAuthLink(IFirebaseAuthProvider authProvider, FirebaseAuth auth) => CopyPropertiesLocally(authProvider, auth);
 

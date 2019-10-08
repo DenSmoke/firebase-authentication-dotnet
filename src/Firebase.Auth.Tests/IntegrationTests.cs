@@ -1,14 +1,14 @@
-﻿namespace Firebase.Auth.Tests
-{
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.Configuration;
-    using Xunit;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Xunit;
 
+namespace Firebase.Auth.Tests
+{
     public class IntegrationTests
     {
-        private static IConfigurationRoot config = new ConfigurationBuilder().AddJsonFile("config.json").Build();
+        private static readonly IConfigurationRoot config = new ConfigurationBuilder().AddJsonFile("config.json").Build();
 #pragma warning disable IDE1006
         private readonly string ApiKey = config.GetValue<string>(nameof(ApiKey));
         private readonly string FacebookAccessToken = config.GetValue<string>(nameof(FacebookAccessToken));
