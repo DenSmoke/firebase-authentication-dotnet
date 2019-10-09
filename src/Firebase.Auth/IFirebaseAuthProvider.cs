@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Firebase.Auth
 {
@@ -16,20 +17,20 @@ namespace Firebase.Auth
         /// <param name="displayName"> Optional display name. </param>
         /// <param name="sendVerificationEmail"> Optional. Whether to send user a link to verfiy his email address. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> CreateUserWithEmailAndPasswordAsync(string email, string password, string displayName = "", bool sendVerificationEmail = false);
+        Task<FirebaseAuthLink> CreateUserWithEmailAndPasswordAsync(string email, string password, string displayName = "", bool sendVerificationEmail = false, CancellationToken ct = default);
 
         /// <summary>
         /// Sends user an email with a link to reset his password.
         /// </summary>
         /// <param name="email"> The email.  </param>
         /// <returns> The <see cref="Task"/>. </returns>
-        Task SendPasswordResetEmailAsync(string email);
+        Task SendPasswordResetEmailAsync(string email, CancellationToken ct = default);
 
         /// <summary>
         /// Sign in user anonymously. He would still have a user id and access token generated, but name and other personal user properties will be null.
         /// </summary>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> SignInAnonymouslyAsync();
+        Task<FirebaseAuthLink> SignInAnonymouslyAsync(CancellationToken ct = default);
 
         /// <summary>
         /// Using the provided email and password, get the firebase auth with token and basic user credentials.
@@ -37,7 +38,7 @@ namespace Firebase.Auth
         /// <param name="email"> The email. </param>
         /// <param name="password"> The password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> SignInWithEmailAndPasswordAsync(string email, string password);
+        Task<FirebaseAuthLink> SignInWithEmailAndPasswordAsync(string email, string password, CancellationToken ct = default);
 
         /// <summary>
         /// Using the provided access token from third party auth provider (google, facebook...), get the firebase auth with token and basic user credentials.
@@ -45,14 +46,14 @@ namespace Firebase.Auth
         /// <param name="authType"> The auth type. </param>
         /// <param name="oauthAccessToken"> The access token retrieved from login provider of your choice. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> SignInWithOAuthAsync(FirebaseAuthType authType, string oauthAccessToken);
+        Task<FirebaseAuthLink> SignInWithOAuthAsync(FirebaseAuthType authType, string oauthAccessToken, CancellationToken ct = default);
 
         /// <summary>
         /// Sign in with a custom token. You would usually create and sign such a token on your server to integrate with your existing authentiocation system.
         /// </summary>
         /// <param name="customToken"> The access token retrieved from login provider of your choice. </param>
         /// <returns> The <see cref="FirebaseAuth"/>. </returns>
-        Task<FirebaseAuthLink> SignInWithCustomTokenAsync(string customToken);
+        Task<FirebaseAuthLink> SignInWithCustomTokenAsync(string customToken, CancellationToken ct = default);
 
         /// <summary>
         /// Updates profile (displayName and photoUrl) of user tied to given user token.
@@ -60,7 +61,7 @@ namespace Firebase.Auth
         /// <param name="displayName"> The new display name. </param>
         /// <param name="photoUrl"> The new photo URL. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> UpdateProfileAsync(string firebaseToken, string displayName, string photoUrl);
+        Task<FirebaseAuthLink> UpdateProfileAsync(string firebaseToken, string displayName, string photoUrl, CancellationToken ct = default);
 
         /// <summary>
         /// Links the authenticated user represented by <see cref="auth"/> with an email and password. 
@@ -69,7 +70,7 @@ namespace Firebase.Auth
         /// <param name="email"> The email. </param>
         /// <param name="password"> The password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, string email, string password);
+        Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, string email, string password, CancellationToken ct = default);
 
         /// <summary>
         /// Links the authenticated user represented by <see cref="auth"/> with an email and password. 
@@ -78,7 +79,7 @@ namespace Firebase.Auth
         /// <param name="email"> The email. </param>
         /// <param name="password"> The password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> LinkAccountsAsync(string firebaseToken, string email, string password);
+        Task<FirebaseAuthLink> LinkAccountsAsync(string firebaseToken, string email, string password, CancellationToken ct = default);
 
         /// <summary>
         /// Links the authenticated user represented by <see cref="auth"/> with and account from a third party provider.
@@ -87,7 +88,7 @@ namespace Firebase.Auth
         /// <param name="authType"> The auth type.  </param>
         /// <param name="oauthAccessToken"> The access token retrieved from login provider of your choice. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType, string oauthAccessToken);
+        Task<FirebaseAuthLink> LinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType, string oauthAccessToken, CancellationToken ct = default);
 
         /// <summary>
         /// Links the authenticated user represented by <see cref="auth"/> with and account from a third party provider.
@@ -96,7 +97,7 @@ namespace Firebase.Auth
         /// <param name="authType"> The auth type.  </param>
         /// <param name="oauthAccessToken"> The access token retrieved from login provider of your choice. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        Task<FirebaseAuthLink> LinkAccountsAsync(string firebaseToken, FirebaseAuthType authType, string oauthAccessToken);
+        Task<FirebaseAuthLink> LinkAccountsAsync(string firebaseToken, FirebaseAuthType authType, string oauthAccessToken, CancellationToken ct = default);
 
         /// <summary>
         /// Unlinks the given <see cref="authType"/> from the account associated with <see cref="firebaseToken"/>.
@@ -104,7 +105,7 @@ namespace Firebase.Auth
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
         /// <param name="authType"> The auth type.  </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        Task<FirebaseAuthLink> UnlinkAccountsAsync(string firebaseToken, FirebaseAuthType authType);
+        Task<FirebaseAuthLink> UnlinkAccountsAsync(string firebaseToken, FirebaseAuthType authType, CancellationToken ct = default);
 
         /// <summary>
         /// Unlinks the given <see cref="authType"/> from the authenticated user represented by <see cref="auth"/>.
@@ -112,47 +113,47 @@ namespace Firebase.Auth
         /// <param name="auth"> The auth. </param>
         /// <param name="authType"> The auth type.  </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>.  </returns>
-        Task<FirebaseAuthLink> UnlinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType);
+        Task<FirebaseAuthLink> UnlinkAccountsAsync(FirebaseAuth auth, FirebaseAuthType authType, CancellationToken ct = default);
 
         /// <summary>
         /// Gets a list of accounts linked to given email.
         /// </summary>
         /// <param name="email"> Email address. </param>
         /// <returns> The <see cref="ProviderQueryResult"/></returns>
-        Task<ProviderQueryResult> GetLinkedAccountsAsync(string email);
+        Task<ProviderQueryResult> GetLinkedAccountsAsync(string email, CancellationToken ct = default);
 
         /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
         /// <returns> The <see cref="FirebaseUser"/>. </returns>
-        Task<FirebaseUser> GetUserAsync(string firebaseToken);
+        Task<FirebaseUser> GetUserAsync(string firebaseToken, CancellationToken ct = default);
 
         /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
         /// <returns> The <see cref="FirebaseUser"/>. </returns>
-        Task<FirebaseUser> GetUserAsync(FirebaseAuth auth);
+        Task<FirebaseUser> GetUserAsync(FirebaseAuth auth, CancellationToken ct = default);
 
         /// <summary>
         /// Sends user an email with a link to verify his email address.
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
-        Task SendEmailVerificationAsync(string firebaseToken);
+        Task SendEmailVerificationAsync(string firebaseToken, CancellationToken ct = default);
 
         /// <summary>
         /// Sends user an email with a link to verify his email address.
         /// </summary>
         /// <param name="auth"> The authenticated user to verify email address. </param>
-        Task SendEmailVerificationAsync(FirebaseAuth auth);
+        Task SendEmailVerificationAsync(FirebaseAuth auth, CancellationToken ct = default);
 
         /// <summary>
         /// Refreshes given auth using its refresh token.
         /// </summary>
         /// <param name="auth"> The authenticated user to have its access token refreshed. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth);
+        Task<FirebaseAuthLink> RefreshAuthAsync(FirebaseAuth auth, CancellationToken ct = default);
 
         /// <summary>
         ///     Change user's password with his token.
@@ -160,6 +161,6 @@ namespace Firebase.Auth
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
         /// <param name="password"> The new password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
-        Task<FirebaseAuthLink> ChangeUserPasswordAsync(string firebaseToken, string password);
+        Task<FirebaseAuthLink> ChangeUserPasswordAsync(string firebaseToken, string password, CancellationToken ct = default);
     }
 }
