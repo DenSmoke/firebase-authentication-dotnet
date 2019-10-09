@@ -1,4 +1,4 @@
-# FirebaseAuthentication.net
+# ViceCode.Firebase.Auth
 [![Build Status](https://dev.azure.com/CompLead/TechWiz/_apis/build/status/firebase-authentication-dotnet-CI?branchName=master)](https://dev.azure.com/CompLead/TechWiz/_build/latest?definitionId=13&branchName=master)
 
 Firebase authentication library. It can generate Firebase auth token based on given OAuth token (issued by Google, Facebook...). This Firebase token can then be used with REST queries against Firebase Database endpoints. See [FirebaseDatabase.net](https://github.com/step-up-labs/firebase-database-dotnet) for a C# library wrapping the Firebase Database REST queries.
@@ -6,7 +6,7 @@ Firebase authentication library. It can generate Firebase auth token based on gi
 ## Installation
 ```csharp
 // Install release version
-Install-Package DenSmoke.FirebaseAuthentication.net
+Install-Package ViceCode.Firebase.Auth
 ```
 
 ## Supported frameworks
