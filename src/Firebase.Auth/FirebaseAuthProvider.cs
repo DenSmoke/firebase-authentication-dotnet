@@ -41,9 +41,23 @@ namespace Firebase.Auth
         private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/> class with provided <see cref="HttpClient"/>
+        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/>
         /// </summary>
-        /// <param name="authConfig"> The auth config. </param>
+        /// <param name="apiKey">Firebase API key</param>
+        [Obsolete("With this constructor new HttpClient will created for each request. Use FirebaseAuthProvider(string apiKey, IHttpClientFactory httpClientFactory) instead")]
+        public FirebaseAuthProvider(string apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new ArgumentException("Invalid Firebase API key", nameof(apiKey));
+            _apiKey = apiKey;
+            _httpClientFactory = new HttpClientFactory();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/> class with provided <see cref="IHttpClientFactory"/>
+        /// </summary>
+        /// <param name="apiKey">Firebase API key</param>
+        /// <param name="httpClientFactory"><see cref="System.Net.Http.HttpClient"/> instance factory</param>
         public FirebaseAuthProvider(string apiKey, IHttpClientFactory httpClientFactory)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -53,10 +67,10 @@ namespace Firebase.Auth
         }
 
         /// <summary>
-        /// Get <see cref="HttpClient"/> instance from <see cref="IHttpClientFactory"/>
+        /// Get <see cref="System.Net.Http.HttpClient"/> instance from <see cref="IHttpClientFactory"/>
         /// </summary>
         /// <returns></returns>
-        private HttpClient GetHttpClient() => _httpClientFactory.CreateClient();
+        private HttpClient HttpClient => _httpClientFactory.CreateClient();
 
         /// <summary>
         /// Sign in with a custom token. You would usually create and sign such a token on your server to integrate with your existing authentiocation system.
@@ -100,7 +114,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
@@ -277,7 +291,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
@@ -309,7 +323,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
@@ -334,7 +348,7 @@ namespace Firebase.Auth
             {
                 Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
             };
-            using var httpClient = GetHttpClient();
+            using var httpClient = HttpClient;
             using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
@@ -432,7 +446,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -464,7 +478,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationUrlEncodedMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
@@ -498,7 +512,7 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(postContent, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var httpClient = GetHttpClient();
+                using var httpClient = HttpClient;
                 using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
