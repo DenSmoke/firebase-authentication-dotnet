@@ -90,6 +90,21 @@ namespace Firebase.Auth
         }
 
         /// <summary>
+        /// Using the provided Id token from google signin, get the firebase auth with token and basic user credentials.
+        /// </summary>
+        /// <param name="authType"> The auth type. </param>
+        /// <param name="oauthAccessToken"> The access token retrieved from twitter. </param>
+        /// <param name="oauthAccessToken"> The access token secret supplied by twitter. </param>
+        /// <returns> The <see cref="FirebaseAuth"/>. </returns>
+        public async Task<FirebaseAuthLink> SignInWithOAuthTwitterTokenAsync(string oauthAccessToken, string oauthTokenSecret)
+        {
+            var providerId = GetProviderId(FirebaseAuthType.Twitter);
+            var content = $"{{\"postBody\":\"access_token={oauthAccessToken}&oauth_token_secret={oauthTokenSecret}&providerId={providerId}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true}}";
+
+            return await ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
@@ -306,13 +321,24 @@ namespace Firebase.Auth
         {
             var content = $"{{\"requestType\":\"PASSWORD_RESET\",\"email\":\"{email}\"}}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _authConfig.ApiKey)))
+            JsonDocument responseJson = default;
+            try
             {
-                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                Version = _defaultHttpVersion
-            };
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _authConfig.ApiKey)))
+                {
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
+                    Version = _defaultHttpVersion
+                };
+                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                var errorReason = GetFailureReason(responseJson);
+                throw new FirebaseAuthException(GoogleGetConfirmationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
         }
 
         /// <summary>
@@ -536,7 +562,7 @@ namespace Firebase.Auth
             }
             catch (JsonException) { }
 
-            return errorCode switch
+            var failureReason = errorCode switch
             {
                 //general errors
                 "invalid access_token, error code 43." => AuthErrorReason.InvalidAccessToken,
@@ -567,8 +593,22 @@ namespace Firebase.Auth
                 "INVALID_IDENTIFIER" => AuthErrorReason.InvalidIdentifier,
                 "MISSING_IDENTIFIER" => AuthErrorReason.MissingIdentifier,
                 "FEDERATED_USER_ID_ALREADY_LINKED" => AuthErrorReason.AlreadyLinked,
-                _ => AuthErrorReason.Undefined,
+                "OPERATION_NOT_ALLOWED" => AuthErrorReason.OperationNotAllowed,
+                "RESET_PASSWORD_EXCEED_LIMIT" => AuthErrorReason.ResetPasswordExceedLimit,
+                _ => AuthErrorReason.Undefined
             };
+
+            if (failureReason == AuthErrorReason.Undefined)
+            {
+                //possible errors from Email/Password Account Signup (via signupNewUser or setAccountInfo)
+                if (errorCode?.StartsWith("WEAK_PASSWORD :", StringComparison.OrdinalIgnoreCase) ?? false)
+                    failureReason = AuthErrorReason.WeakPassword;
+                //possible errors from Email/Password Signin
+                else if (errorCode?.StartsWith("TOO_MANY_ATTEMPTS_TRY_LATER :", StringComparison.OrdinalIgnoreCase) ?? false)
+                    failureReason = AuthErrorReason.TooManyAttemptsTryLater;
+            }
+
+            return failureReason;
         }
 
         private static string GetProviderId(FirebaseAuthType authType)
