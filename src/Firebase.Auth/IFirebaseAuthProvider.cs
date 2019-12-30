@@ -162,5 +162,19 @@ namespace Firebase.Auth
         /// <param name="password"> The new password. </param>
         /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
         Task<FirebaseAuthLink> ChangeUserPasswordAsync(string firebaseToken, string password, CancellationToken ct = default);
+
+        /// <summary>
+        /// Using the provided Id token from Twitter signin, get the firebase auth with token and basic user credentials.
+        /// </summary>
+        /// <param name="oauthAccessToken"> The access token retrieved from twitter. </param>
+        /// <param name="oauthAccessToken"> The access token secret supplied by twitter. </param>
+        /// <returns> The <see cref="FirebaseAuth"/>. </returns>
+        Task<FirebaseAuthLink> SignInWithOAuthTwitterTokenAsync(string oauthAccessToken, string oauthTokenSecret);
+
+        /// <summary>
+        /// Deletes the user with a recent Firebase Token.
+        /// </summary>
+        /// <param name="firebaseToken"> Recent Firebase Token. </param>
+        Task DeleteUserAsync(string firebaseToken, CancellationToken ct = default);
     }
 }
