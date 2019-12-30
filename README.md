@@ -10,6 +10,7 @@ Install-Package ViceCode.Firebase.Auth
 ```
 
 ## Supported frameworks
+* .NET Core 3.1
 * .NET Standard 2.0 - see https://github.com/dotnet/standard/blob/master/docs/versions.md for compatibility matrix
 
 ## Supported scenarios
@@ -18,30 +19,33 @@ Install-Package ViceCode.Firebase.Auth
 * Login with email + password
 * Create new user with email + password
 * Send a password reset email
+* Send a verification email
 * Link two accounts together
+* Delete account
 
 ## Usage
 
 ```csharp
-var authProvider = new FirebaseAuthProvider(new FirebaseConfig(FirebaseApiKey));
+var serviceProvider = new ServiceCollection()
+    .AddHttpClient()
+    .BuildServiceProvider();
+
+var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>()
+var authProvider = new FirebaseAuthProvider(FirebaseApiKey, httpClientFactory);
 var facebookAccessToken = "<login with facebook and get oauth access token>";
 
 var auth = await authProvider.SignInWithOAuthAsync(FirebaseAuthType.Facebook, facebookAccessToken);
 
-var firebase = new FirebaseClient(
-  "https://dinosaur-facts.firebaseio.com/",
-  new FirebaseOptions
-  {
-    AuthTokenAsyncFactory = () => Task.FromResult(auth.FirebaseToken) 
-  });
+var options = new FirebaseOptions { AuthTokenAsyncFactory = () => Task.FromResult(auth.FirebaseToken) };
+var firebase = new FirebaseClient("https://dinosaur-facts.firebaseio.com/", options);
 
 var dinos = await firebase
-  .Child("dinosaurs")
-  .OnceAsync<Dinosaur>();
+    .Child("dinosaurs")
+    .OnceAsync<Dinosaur>();
   
 foreach (var dino in dinos)
 {
-  Console.WriteLine($"{dino.Key} is {dino.Object.Height}m high.");
+    Console.WriteLine($"{dino.Key} is {dino.Object.Height}m high.");
 }
 ```
 

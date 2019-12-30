@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -16,7 +15,7 @@ namespace Firebase.Auth
     /// <summary>
     /// The auth token provider.
     /// </summary>
-    public class FirebaseAuthProvider : IDisposable, IFirebaseAuthProvider
+    public class FirebaseAuthProvider : IFirebaseAuthProvider
     {
 #pragma warning disable IDE1006 // Стили именования
         private const string GoogleRefreshAuth = "https://securetoken.googleapis.com/v1/token?key={0}";
@@ -38,43 +37,40 @@ namespace Firebase.Auth
         private const string ApplicationUrlEncodedMimeType = "application/x-www-form-urlencoded";
 #pragma warning restore IDE1006 // Стили именования
 
-        private readonly FirebaseConfig _authConfig;
-        private HttpClient _httpClient;
-
-        private readonly Version _defaultHttpVersion = RuntimeInformation.FrameworkDescription.Contains(".NET Framework") ? new Version(1, 1) : new Version(2, 0);
+        private readonly string _apiKey;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/> class.
+        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/>
         /// </summary>
-        /// <param name="authConfig"> The auth config. </param>
-        public FirebaseAuthProvider(FirebaseConfig authConfig)
+        /// <param name="apiKey">Firebase API key</param>
+        [Obsolete("With this constructor new HttpClient will created for each request. Use FirebaseAuthProvider(string apiKey, IHttpClientFactory httpClientFactory) instead")]
+        public FirebaseAuthProvider(string apiKey)
         {
-            _authConfig = authConfig;
-            _httpClient = new HttpClient();
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new ArgumentException("Invalid Firebase API key", nameof(apiKey));
+            _apiKey = apiKey;
+            _httpClientFactory = new HttpClientFactory();
         }
-
 
         /// <summary>
-        /// Disposes all allocated resources. 
+        /// Initializes a new instance of the <see cref="FirebaseAuthProvider"/> class with provided <see cref="IHttpClientFactory"/>
         /// </summary>
-        public void Dispose()
+        /// <param name="apiKey">Firebase API key</param>
+        /// <param name="httpClientFactory"><see cref="System.Net.Http.HttpClient"/> instance factory</param>
+        public FirebaseAuthProvider(string apiKey, IHttpClientFactory httpClientFactory)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new ArgumentException("Invalid Firebase API key", nameof(apiKey));
+            _apiKey = apiKey;
+            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // free managed resources
-                if (_httpClient != null)
-                {
-                    _httpClient.Dispose();
-                    _httpClient = null;
-                }
-            }
-        }
+        /// <summary>
+        /// Get <see cref="System.Net.Http.HttpClient"/> instance from <see cref="IHttpClientFactory"/>
+        /// </summary>
+        /// <returns></returns>
+        private HttpClient HttpClient => _httpClientFactory.CreateClient();
 
         /// <summary>
         /// Sign in with a custom token. You would usually create and sign such a token on your server to integrate with your existing authentiocation system.
@@ -90,6 +86,20 @@ namespace Firebase.Auth
         }
 
         /// <summary>
+        /// Using the provided Id token from Twitter signin, get the firebase auth with token and basic user credentials.
+        /// </summary>
+        /// <param name="oauthAccessToken"> The access token retrieved from twitter. </param>
+        /// <param name="oauthAccessToken"> The access token secret supplied by twitter. </param>
+        /// <returns> The <see cref="FirebaseAuth"/>. </returns>
+        public async Task<FirebaseAuthLink> SignInWithOAuthTwitterTokenAsync(string oauthAccessToken, string oauthTokenSecret)
+        {
+            var providerId = GetProviderId(FirebaseAuthType.Twitter);
+            var content = $"{{\"postBody\":\"access_token={oauthAccessToken}&oauth_token_secret={oauthTokenSecret}&providerId={providerId}\",\"requestUri\":\"http://localhost\",\"returnSecureToken\":true}}";
+
+            return await ExecuteWithPostContentAsync(GoogleIdentityUrl, content).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Using the idToken of an authenticated user, get the details of the user's account
         /// </summary>
         /// <param name="firebaseToken"> The FirebaseToken (idToken) of an authenticated user. </param>
@@ -100,12 +110,12 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetUser, _authConfig.ApiKey)))
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetUser, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                    Version = _defaultHttpVersion
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
@@ -269,7 +279,7 @@ namespace Firebase.Auth
         /// <summary>
         /// Deletes the user with a recent Firebase Token.
         /// </summary>
-        /// <param name="token"> Recent Firebase Token. </param>
+        /// <param name="firebaseToken"> Recent Firebase Token. </param>
         public async Task DeleteUserAsync(string firebaseToken, CancellationToken ct = default)
         {
             var content = $"{{ \"idToken\": \"{firebaseToken}\" }}";
@@ -277,12 +287,12 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleDeleteUserUrl, _authConfig.ApiKey)))
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleDeleteUserUrl, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                    Version = _defaultHttpVersion
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
@@ -306,13 +316,24 @@ namespace Firebase.Auth
         {
             var content = $"{{\"requestType\":\"PASSWORD_RESET\",\"email\":\"{email}\"}}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _authConfig.ApiKey)))
+            JsonDocument responseJson = default;
+            try
             {
-                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                Version = _defaultHttpVersion
-            };
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _apiKey)))
+                {
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
+                };
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                var errorReason = GetFailureReason(responseJson);
+                throw new FirebaseAuthException(GoogleGetConfirmationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
         }
 
         /// <summary>
@@ -323,12 +344,12 @@ namespace Firebase.Auth
         {
             var content = $"{{\"requestType\":\"VERIFY_EMAIL\",\"idToken\":\"{firebaseToken}\"}}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _authConfig.ApiKey)))
+            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _apiKey)))
             {
-                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                Version = _defaultHttpVersion
+                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
             };
-            using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+            using var httpClient = HttpClient;
+            using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
         }
 
@@ -421,12 +442,12 @@ namespace Firebase.Auth
             string responseString = null;
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleCreateAuthUrl, _authConfig.ApiKey)))
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleCreateAuthUrl, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
-                    Version = _defaultHttpVersion
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
                     responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -453,12 +474,12 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleRefreshAuth, _authConfig.ApiKey)))
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleRefreshAuth, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationUrlEncodedMimeType),
-                    Version = _defaultHttpVersion
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationUrlEncodedMimeType)
                 };
-                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
                 var refreshAuth = responseJson.RootElement;
@@ -487,12 +508,12 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, googleUrl, _authConfig.ApiKey)))
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, googleUrl, _apiKey)))
                 {
-                    Content = new StringContent(postContent, Encoding.UTF8, ApplicationJsonMimeType),
-                    Version = _defaultHttpVersion
+                    Content = new StringContent(postContent, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var httpClient = HttpClient;
+                using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
                 using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -536,7 +557,7 @@ namespace Firebase.Auth
             }
             catch (JsonException) { }
 
-            return errorCode switch
+            var failureReason = errorCode switch
             {
                 //general errors
                 "invalid access_token, error code 43." => AuthErrorReason.InvalidAccessToken,
@@ -567,8 +588,22 @@ namespace Firebase.Auth
                 "INVALID_IDENTIFIER" => AuthErrorReason.InvalidIdentifier,
                 "MISSING_IDENTIFIER" => AuthErrorReason.MissingIdentifier,
                 "FEDERATED_USER_ID_ALREADY_LINKED" => AuthErrorReason.AlreadyLinked,
-                _ => AuthErrorReason.Undefined,
+                "OPERATION_NOT_ALLOWED" => AuthErrorReason.OperationNotAllowed,
+                "RESET_PASSWORD_EXCEED_LIMIT" => AuthErrorReason.ResetPasswordExceedLimit,
+                _ => AuthErrorReason.Undefined
             };
+
+            if (failureReason == AuthErrorReason.Undefined)
+            {
+                //possible errors from Email/Password Account Signup (via signupNewUser or setAccountInfo)
+                if (errorCode?.StartsWith("WEAK_PASSWORD :", StringComparison.OrdinalIgnoreCase) ?? false)
+                    failureReason = AuthErrorReason.WeakPassword;
+                //possible errors from Email/Password Signin
+                else if (errorCode?.StartsWith("TOO_MANY_ATTEMPTS_TRY_LATER :", StringComparison.OrdinalIgnoreCase) ?? false)
+                    failureReason = AuthErrorReason.TooManyAttemptsTryLater;
+            }
+
+            return failureReason;
         }
 
         private static string GetProviderId(FirebaseAuthType authType)
