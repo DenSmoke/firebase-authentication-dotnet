@@ -122,11 +122,18 @@ namespace Firebase.Auth.Tests
             using var authProvider = new FirebaseAuthProvider(new FirebaseConfig(ApiKey));
 
             var auth = await authProvider.SignInAnonymouslyAsync().ConfigureAwait(false);
-            var newAuth = await auth.LinkToAsync(FirebaseAuthType.Facebook, FacebookAccessToken).ConfigureAwait(false);
+            try
+            {
+                var newAuth = await auth.LinkToAsync(FirebaseAuthType.Facebook, FacebookAccessToken).ConfigureAwait(false);
 
-            Assert.Equal(auth.User.LocalId, newAuth.User.LocalId);
-            Assert.Equal(FacebookTestUserFirstName, newAuth.User.FirstName);
-            Assert.False(string.IsNullOrWhiteSpace(newAuth.FirebaseToken));
+                Assert.Equal(auth.User.LocalId, newAuth.User.LocalId);
+                Assert.Equal(FacebookTestUserFirstName, newAuth.User.FirstName);
+                Assert.False(string.IsNullOrWhiteSpace(newAuth.FirebaseToken));
+            }
+            finally
+            {
+                await authProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
         }
 
         [Fact]
