@@ -81,6 +81,18 @@
         /// <summary>
         /// Linked accounts: account to link has already been linked.
         /// </summary>
-        AlreadyLinked
+        AlreadyLinked,
+        /// <summary>
+        /// The sign in method is not enabled.
+        /// </summary>
+        OperationNotAllowed,
+        /// <summary>
+        /// Email/Password Signin: Too many password login have been attempted. Try again later.
+        /// </summary>
+        TooManyAttemptsTryLater,
+        /// <summary>
+        /// Password Recovery: Reset password limit exceeded.
+        /// </summary>
+        ResetPasswordExceedLimit
     }
 }
