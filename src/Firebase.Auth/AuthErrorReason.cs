@@ -93,6 +93,41 @@
         /// <summary>
         /// Password Recovery: Reset password limit exceeded.
         /// </summary>
-        ResetPasswordExceedLimit
+        ResetPasswordExceedLimit,
+
+        /// <summary>
+        ///     Phone Signin: Recaptcha token expired.
+        /// </summary>
+        RecaptchaTokenExpired,
+
+        /// <summary>
+        ///     Phone Signin: Recaptcha token malformed.
+        /// </summary>
+        RecaptchaTokenMalformed,
+
+        /// <summary>
+        ///     Phone Signin: Phone number is too short.
+        /// </summary>
+        PhoneNumberTooShort,
+
+        /// <summary>
+        ///     Phone Signin: Phone number is too long.
+        /// </summary>
+        PhoneNumberTooLong,
+
+        /// <summary>
+        ///     Phone Signin: session expired.
+        /// </summary>
+        SessionExpired,
+
+        /// <summary>
+        ///     Phone Signin: invalid session info.
+        /// </summary>
+        InvalidSession,
+
+        /// <summary>
+        ///     Phone Signin: invalid verification code.
+        /// </summary>
+        InvalidCode
     }
 }

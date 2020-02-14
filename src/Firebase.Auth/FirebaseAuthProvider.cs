@@ -30,6 +30,9 @@ namespace Firebase.Auth
         private const string GoogleCreateAuthUrl = "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key={0}";
         private const string GoogleUpdateUserPassword = "https://identitytoolkit.googleapis.com/v1/accounts:update?key={0}";
 
+        private const string GoogleVerificationCodeUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/sendVerificationCode?key={0}";
+        private const string GooglePhoneNumberUrl = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPhoneNumber?key={0}";
+
         private const string ProfileDeleteDisplayName = "DISPLAY_NAME";
         private const string ProfileDeletePhotoUrl = "PHOTO_URL";
 
@@ -583,6 +586,15 @@ namespace Firebase.Auth
                 "FEDERATED_USER_ID_ALREADY_LINKED" => AuthErrorReason.AlreadyLinked,
                 "OPERATION_NOT_ALLOWED" => AuthErrorReason.OperationNotAllowed,
                 "RESET_PASSWORD_EXCEED_LIMIT" => AuthErrorReason.ResetPasswordExceedLimit,
+
+                // possible errors from Phone Signin
+                "CAPTCHA_CHECK_FAILED : Recaptcha verification failed - EXPIRED" => AuthErrorReason.RecaptchaTokenExpired,
+                "CAPTCHA_CHECK_FAILED : Recaptcha verification failed - MALFORMED" => AuthErrorReason.RecaptchaTokenMalformed,
+                "INVALID_PHONE_NUMBER : TOO_SHORT" => AuthErrorReason.PhoneNumberTooShort,
+                "INVALID_PHONE_NUMBER : TOO_LONG" => AuthErrorReason.PhoneNumberTooLong,
+                "SESSION_EXPIRED" => AuthErrorReason.SessionExpired,
+                "INVALID_SESSION_INFO" => AuthErrorReason.InvalidSession,
+                "INVALID_CODE" => AuthErrorReason.InvalidCode,
                 _ => AuthErrorReason.Undefined
             };
 
@@ -613,6 +625,41 @@ namespace Firebase.Auth
                 default:
                     throw new NotImplementedException("");
             }
+        }
+
+        public async Task<string> SendVerificationCodeAsync(string phoneNumber, string recaptchaToken, CancellationToken ct = default)
+        {
+            var content = $"{{\"phoneNumber\":\"{phoneNumber}\",\"recaptchaToken\":\"{recaptchaToken}\"}}";
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleVerificationCodeUrl, _apiKey)))
+            {
+                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
+            };
+
+            JsonDocument responseJson = default;
+
+            try
+            {
+                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
+
+                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
+
+                response.EnsureSuccessStatusCode();
+                return responseJson.RootElement.GetProperty("sessionInfo").GetString();
+            }
+            catch(Exception ex)
+            {
+                var errorReason = GetFailureReason(responseJson);
+                throw new FirebaseAuthException(GoogleVerificationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
+        }
+
+        public async Task<FirebaseAuthLink> SignInWithPhoneAsync(string sessionInfo, string code, CancellationToken ct = default)
+        {
+            var content = $"{{\"sessionInfo\":\"{sessionInfo}\",\"code\":\"{code}\"}}";
+
+            return await ExecuteWithPostContentAsync(GooglePhoneNumberUrl, content, ct).ConfigureAwait(false);
         }
     }
 }

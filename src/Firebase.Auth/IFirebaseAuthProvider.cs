@@ -176,5 +176,21 @@ namespace Firebase.Auth
         /// </summary>
         /// <param name="firebaseToken"> Recent Firebase Token. </param>
         Task DeleteUserAsync(string firebaseToken, CancellationToken ct = default);
+
+        /// <summary>
+        ///     Sends user an sms with a code to verify his phone number.
+        /// </summary>
+        /// <param name="phoneNumber"> Phone number. </param>
+        /// <param name="recaptchaToken"> Recaptcha token. </param>
+        /// <returns> The session info. </returns>
+        Task<string> SendVerificationCodeAsync(string phoneNumber, string recaptchaToken, CancellationToken ct = default);
+
+        /// <summary>
+        ///     Using the provided session info and sms code from phone signin, get the firebase auth with token and basic user credentials.
+        /// </summary>
+        /// <param name="sessionInfo"> Phone verification session info. </param>
+        /// <param name="code"> Verification SMS code. </param>
+        /// <returns> The <see cref="FirebaseAuthLink"/>. </returns>
+        Task<FirebaseAuthLink> SignInWithPhoneAsync(string sessionInfo, string code, CancellationToken ct = default);
     }
 }
