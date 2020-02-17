@@ -654,6 +654,10 @@ namespace Firebase.Auth
                 var errorReason = GetFailureReason(responseJson);
                 throw new FirebaseAuthException(GoogleVerificationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
             }
+            finally
+            {
+                responseJson?.Dispose();
+            }
         }
 
         public async Task<FirebaseAuthLink> SignInWithPhoneAsync(string sessionInfo, string code, CancellationToken ct = default)
