@@ -31,6 +31,9 @@ namespace Firebase.Auth.Tests
         private readonly string NewFirebaseEmail = _config.GetValue<string>(nameof(NewFirebaseEmail));
         private readonly string NewFirebasePassword = _config.GetValue<string>(nameof(NewFirebasePassword));
         private readonly string FirebaseDisplayName = _config.GetValue<string>(nameof(FirebaseDisplayName));
+        private readonly string RecaptchaToken = _config.GetValue<string>(nameof(RecaptchaToken));
+        private readonly string FirebaseDelevoperTestPhone = _config.GetValue<string>(nameof(FirebaseDelevoperTestPhone));
+        private readonly string FirebasePhoneVerificationCode = _config.GetValue<string>(nameof(FirebasePhoneVerificationCode));
 #pragma warning restore IDE1006
 
         public IFirebaseAuthProvider AuthProvider => _serviceProvider.GetRequiredService<IFirebaseAuthProvider>();
@@ -191,6 +194,19 @@ namespace Firebase.Auth.Tests
             {
                 await AuthProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
             }
+        }
+
+        [Fact]
+        public async Task SigninWithPhoneAsync()
+        {
+            var sessionInfo = await AuthProvider.SendVerificationCodeAsync(FirebaseDelevoperTestPhone, RecaptchaToken).ConfigureAwait(false);
+
+            Assert.False(string.IsNullOrEmpty(sessionInfo));
+
+            var authUserInfo = await AuthProvider.SignInWithPhoneAsync(sessionInfo, FirebasePhoneVerificationCode).ConfigureAwait(false);
+
+            Assert.NotNull(authUserInfo);
+            Assert.NotNull(authUserInfo.User);
         }
     }
 }

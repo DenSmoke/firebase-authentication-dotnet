@@ -595,6 +595,7 @@ namespace Firebase.Auth
                 "SESSION_EXPIRED" => AuthErrorReason.SessionExpired,
                 "INVALID_SESSION_INFO" => AuthErrorReason.InvalidSession,
                 "INVALID_CODE" => AuthErrorReason.InvalidCode,
+
                 _ => AuthErrorReason.Undefined
             };
 
