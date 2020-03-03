@@ -208,5 +208,20 @@ namespace Firebase.Auth.Tests
             Assert.NotNull(authUserInfo);
             Assert.NotNull(authUserInfo.User);
         }
+
+        [Fact]
+        public async Task SendPasswordResetEmailAsyncTest()
+        {
+            var newUserDisplayName = "test";
+            var auth = await AuthProvider.CreateUserWithEmailAndPasswordAsync(NewFirebaseEmail, NewFirebasePassword, newUserDisplayName);
+            try
+            {
+                await AuthProvider.SendPasswordResetEmailAsync(NewFirebaseEmail).ConfigureAwait(false);
+            }
+            finally
+            {
+                await AuthProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
+        }
     }
 }
