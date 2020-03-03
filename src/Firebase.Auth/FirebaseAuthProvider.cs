@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -225,25 +222,19 @@ namespace Firebase.Auth
         {
             var content = $"{{\"email\":\"{email}\",\"password\":\"{password}\",\"returnSecureToken\":true}}";
 
-            var signup = await ExecuteWithPostContentAsync(GoogleSignUpUrl, content, ct).ConfigureAwait(false);
+            var auth = await ExecuteWithPostContentAsync(GoogleSignUpUrl, content, ct).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(displayName))
             {
-                // set display name
-                content = $"{{\"displayName\":\"{displayName}\",\"idToken\":\"{signup.FirebaseToken}\",\"returnSecureToken\":true}}";
-
+                content = $"{{\"displayName\":\"{displayName}\",\"idToken\":\"{auth.FirebaseToken}\",\"returnSecureToken\":true}}";
                 await ExecuteWithPostContentAsync(GoogleSetAccountUrl, content, ct).ConfigureAwait(false);
-
-                signup.User.DisplayName = displayName;
+                auth.User.DisplayName = displayName;
             }
 
             if (sendVerificationEmail)
-            {
-                //send verification email
-                await SendEmailVerificationAsync(signup, ct).ConfigureAwait(false);
-            }
+                await SendEmailVerificationAsync(auth, ct).ConfigureAwait(false);
 
-            return signup;
+            return auth;
         }
 
         /// <summary>
