@@ -358,12 +358,34 @@ namespace Firebase.Auth
         {
             var content = $"{{\"requestType\":\"VERIFY_EMAIL\",\"idToken\":\"{firebaseToken}\"}}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _apiKey)))
+            JsonDocument responseJson = default;
+            try
             {
-                Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
-            };
-            using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+                var client = HttpClient;
+                using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleGetConfirmationCodeUrl, _apiKey)))
+                {
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
+#if NETCOREAPP
+                    Version = client.DefaultRequestVersion
+#endif
+                };
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    responseJson = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorReason = GetFailureReason(responseJson);
+                throw new FirebaseAuthException(GoogleGetConfirmationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
+            finally
+            {
+                responseJson?.Dispose();
+            }
         }
 
         /// <summary>
