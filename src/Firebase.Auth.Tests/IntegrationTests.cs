@@ -223,5 +223,20 @@ namespace Firebase.Auth.Tests
                 await AuthProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
             }
         }
+
+        [Fact]
+        public async Task SendEmailVerificationAsyncTest()
+        {
+            var newUserDisplayName = "test";
+            var auth = await AuthProvider.CreateUserWithEmailAndPasswordAsync(NewFirebaseEmail, NewFirebasePassword, newUserDisplayName);
+            try
+            {
+                await AuthProvider.SendEmailVerificationAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                await AuthProvider.DeleteUserAsync(auth.FirebaseToken).ConfigureAwait(false);
+            }
+        }
     }
 }
