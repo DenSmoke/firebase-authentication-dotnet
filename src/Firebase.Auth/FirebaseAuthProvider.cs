@@ -117,17 +117,17 @@ namespace Firebase.Auth
                 {
                     Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
                 };
-                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
-                using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
+                var usersEnumerator = responseJson.RootElement.GetProperty("users").EnumerateArray();
+                usersEnumerator.MoveNext();
                 using var ms = new MemoryStream();
                 using var utf8JsonWriter = new Utf8JsonWriter(ms);
-                responseJson.RootElement.GetProperty("users").WriteTo(utf8JsonWriter);
-                await utf8JsonWriter.FlushAsync(ct).ConfigureAwait(false);
-                ms.Seek(0, SeekOrigin.Begin);
-                var user = (await JsonSerializer.DeserializeAsync<IEnumerable<FirebaseUser>>(ms, null, ct).ConfigureAwait(false)).Single();
-                return user;
+                usersEnumerator.Current.WriteTo(utf8JsonWriter);
+                utf8JsonWriter.Flush();
+                return JsonSerializer.Deserialize<FirebaseUser>(ms.ToArray());
             }
             catch (Exception ex)
             {
@@ -333,6 +333,10 @@ namespace Firebase.Auth
             {
                 var errorReason = GetFailureReason(responseJson);
                 throw new FirebaseAuthException(GoogleGetConfirmationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
+            finally
+            {
+                responseJson?.Dispose();
             }
         }
 
@@ -649,7 +653,7 @@ namespace Firebase.Auth
                 response.EnsureSuccessStatusCode();
                 return responseJson.RootElement.GetProperty("sessionInfo").GetString();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var errorReason = GetFailureReason(responseJson);
                 throw new FirebaseAuthException(GoogleVerificationCodeUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
