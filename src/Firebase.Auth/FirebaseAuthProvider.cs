@@ -285,14 +285,21 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
+                var client = HttpClient;
                 using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleDeleteUserUrl, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
+#if NETCOREAPP
+                    Version = client.DefaultRequestVersion
+#endif
                 };
-                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
-                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                responseJson = await JsonDocument.ParseAsync(stream, default, ct).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    responseJson = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
