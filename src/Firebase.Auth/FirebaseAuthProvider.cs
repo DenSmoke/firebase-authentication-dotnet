@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -509,25 +510,24 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
+                var client = HttpClient;
                 using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, googleUrl, _apiKey)))
                 {
-                    Content = new StringContent(postContent, Encoding.UTF8, ApplicationJsonMimeType)
+                    Content = new StringContent(postContent, Encoding.UTF8, ApplicationJsonMimeType),
+#if NETCOREAPP
+                    Version = client.DefaultRequestVersion
+#endif
                 };
-                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
-                using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+                var responseContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
-                    responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
+                    responseJson = JsonDocument.Parse(responseContent);
                     response.EnsureSuccessStatusCode();
                 }
-
-                var user = await JsonSerializer.DeserializeAsync<FirebaseUser>(responseStream, null, ct).ConfigureAwait(false);
-                responseStream.Seek(0, SeekOrigin.Begin);
-                var auth = await JsonSerializer.DeserializeAsync<FirebaseAuthLink>(responseStream, null, ct).ConfigureAwait(false);
-
+                var auth = JsonSerializer.Deserialize<FirebaseAuthLink>(responseContent);
                 auth.AuthProvider = this;
-                auth.User = user;
-
+                auth.User = JsonSerializer.Deserialize<FirebaseUser>(responseContent);
                 return auth;
             }
             catch (Exception ex)
