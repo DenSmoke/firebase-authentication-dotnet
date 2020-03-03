@@ -517,15 +517,19 @@ namespace Firebase.Auth
             JsonDocument responseJson = default;
             try
             {
+                var client = HttpClient;
                 using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleRefreshAuth, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationUrlEncodedMimeType)
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationUrlEncodedMimeType),
+#if NETCOREAPP
+                    Version = client.DefaultRequestVersion
+#endif
                 };
-                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
-                using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 responseJson = await JsonDocument.ParseAsync(responseStream, default, ct).ConfigureAwait(false);
-                var refreshAuth = responseJson.RootElement;
                 response.EnsureSuccessStatusCode();
+                var refreshAuth = responseJson.RootElement;
                 return new FirebaseAuthLink
                 {
                     AuthProvider = this,
