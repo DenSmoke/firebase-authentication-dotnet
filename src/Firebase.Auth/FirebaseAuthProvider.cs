@@ -474,21 +474,25 @@ namespace Firebase.Auth
         public async Task<ProviderQueryResult> GetLinkedAccountsAsync(string email, CancellationToken ct = default)
         {
             var content = $"{{\"identifier\":\"{email}\", \"continueUri\": \"http://localhost\"}}";
-            string responseString = null;
+
+            JsonDocument responseJson = default;
             try
             {
+                var client = HttpClient;
                 using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(string.Format(CultureInfo.InvariantCulture, GoogleCreateAuthUrl, _apiKey)))
                 {
-                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType)
+                    Content = new StringContent(content, Encoding.UTF8, ApplicationJsonMimeType),
+#if NETCOREAPP
+                    Version = client.DefaultRequestVersion
+#endif
                 };
-                using var response = await HttpClient.SendAsync(request, ct).ConfigureAwait(false);
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                 {
-                    responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    responseJson = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
                     response.EnsureSuccessStatusCode();
                 }
-
-                using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
                 var options = new JsonSerializerOptions();
                 options.Converters.Add(new JsonStringListOfEnumConverter<FirebaseAuthType>());
                 var data = await JsonSerializer.DeserializeAsync<ProviderQueryResult>(stream, options, ct).ConfigureAwait(false);
@@ -498,7 +502,12 @@ namespace Firebase.Auth
             }
             catch (Exception ex)
             {
-                throw new FirebaseAuthException(GoogleCreateAuthUrl, content, responseString, ex);
+                var errorReason = GetFailureReason(responseJson);
+                throw new FirebaseAuthException(GoogleCreateAuthUrl, content, responseJson?.RootElement.ToString(), ex, errorReason);
+            }
+            finally
+            {
+                responseJson?.Dispose();
             }
         }
 
