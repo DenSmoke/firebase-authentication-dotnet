@@ -11,12 +11,9 @@ namespace Firebase.Auth
         /// <summary>
         /// Добавление <see cref="IHttpClientBuilder"/> к <see cref="IServiceCollection"/> c настройкой:
         /// <br> Название HttpClient = <see cref="FirebaseAuthProvider"/> </br>
+        /// <br> DefaultRequestVersion = <see cref="HttpVersion.Version20"/> </br>
         /// </summary>
         public static IHttpClientBuilder AddFirebaseHttpClient(this IServiceCollection services) =>
-#if NETSTANDARD2_0
-            services.AddHttpClient(nameof(FirebaseAuthProvider));
-#else
             services.AddHttpClient(nameof(FirebaseAuthProvider), x => x.DefaultRequestVersion = HttpVersion.Version20);
-#endif
     }
 }
