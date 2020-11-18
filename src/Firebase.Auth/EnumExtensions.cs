@@ -1,21 +1,19 @@
-﻿using System.Net;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Firebase.Auth
 {
-    /// <summary>
-    /// Расширение для <see cref="IServiceCollection"/> c настройкой под <see cref="FirebaseAuthProvider"/>
-    /// </summary>
-    public static class ServiceCollectionExtension
+    public static class EnumExtensions
     {
-        /// <summary>
-        /// Добавление <see cref="IHttpClientBuilder"/> к <see cref="IServiceCollection"/> c названием <see cref="FirebaseAuthProvider"/>
-        /// </summary>
-        public static IHttpClientBuilder AddFirebaseHttpClient(this IServiceCollection services) =>
-#if NETSTANDARD2_0
-            services.AddHttpClient(nameof(FirebaseAuthProvider));
-#else
-            services.AddHttpClient(nameof(FirebaseAuthProvider), x => x.DefaultRequestVersion = HttpVersion.Version20);
-#endif
+        public static string ToEnumString<T>(this T type) where T : struct, IConvertible
+        {
+            var enumType = typeof(T);
+            var name = Enum.GetName(enumType, type);
+            var enumMemberAttribute = ((EnumMemberAttribute[])enumType.GetTypeInfo().DeclaredFields.First(f => f.Name == name).GetCustomAttributes(typeof(EnumMemberAttribute), true)).Single();
+
+            return enumMemberAttribute.Value;
+        }
     }
 }
