@@ -9,8 +9,7 @@ namespace Firebase.Auth
     public static class ServiceCollectionExtension
     {
         /// <summary>
-        /// Добавление <see cref="IHttpClientBuilder"/> к <see cref="IServiceCollection"/> c настройкой:
-        /// <br> Название HttpClient = <see cref="FirebaseAuthProvider"/> </br>
+        /// Добавление <see cref="IHttpClientBuilder"/> к <see cref="IServiceCollection"/> c названием <see cref="FirebaseAuthProvider"/>
         /// </summary>
         public static IHttpClientBuilder AddFirebaseHttpClient(this IServiceCollection services) =>
 #if NETSTANDARD2_0
